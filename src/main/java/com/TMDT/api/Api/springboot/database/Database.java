@@ -24,8 +24,8 @@ public class Database {
                 urls1.add("https://www.tmdt.com");
                 Product product1 = new Product("Iphone 15 promax", "Day la iphone 15 promax", "urlMain", urls1, 20000, 0, 30, 2, 0);
                 Product product2 = new Product("Iphone 14 promax", "Day la iphone 14 promax", "urlMain", urls1, 20000, 0, 30, 2, 0);
-                Customer customer1 = new Customer("Gia Bao","giabaoitwork@gmail.com", "01234567", 1);
-                Customer customer2 = new Customer("Gia Bao1","giabaoitwork@gmail.com", "01234567", 1);
+                Customer customer1 = new Customer("Gia Bao","giabaoitwork@gmail.com","123", "01234567", 1);
+                Customer customer2 = new Customer("Gia Bao1","giabaoitwork@gmail.com","123", "01234567", 1);
                 customerRepository.save(customer1);
                 customerRepository.save(customer2);
                 productRepository.save(product1); // luu doi tuong vao database
