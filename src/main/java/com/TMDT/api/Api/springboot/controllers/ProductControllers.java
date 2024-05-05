@@ -3,6 +3,7 @@ package com.TMDT.api.Api.springboot.controllers;
 import com.TMDT.api.Api.springboot.models.Product;
 import com.TMDT.api.Api.springboot.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,10 +33,22 @@ public class ProductControllers {
         Optional<Product> foundProduct = productRepository.findById(id);
         return foundProduct.isPresent() ?
                 ResponseEntity.status(HttpStatus.OK).body(
-                new ResponseObject("ok", "Success", foundProduct)
-                ):
+                        new ResponseObject("ok", "Success", foundProduct)
+                ) :
                 ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                new ResponseObject("failed", "Cannot find product by id = " + id, "")
+                        new ResponseObject("failed", "Cannot find product by id = " + id, "")
+                );
+    }
+
+    @GetMapping(path = "/getByNameAndId")
+    ResponseEntity<ResponseObject> getProducts(@Param("name") String name, @Param("id") int id) {
+        Optional<Product> foundProduct = productRepository.findByNameAndId(name, id);
+        return foundProduct.isPresent() ?
+                ResponseEntity.status(HttpStatus.OK).body(
+                        new ResponseObject("ok", "Success", foundProduct)
+                ) :
+                ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        new ResponseObject("failed", "Cannot find product by name = " + name + " and id = " + id, "")
                 );
     }
 
