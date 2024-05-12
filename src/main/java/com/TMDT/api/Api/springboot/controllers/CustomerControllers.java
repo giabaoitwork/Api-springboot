@@ -1,5 +1,9 @@
 package com.TMDT.api.Api.springboot.controllers;
 
+import com.TMDT.api.Api.springboot.helper.CustomerRole;
+import com.TMDT.api.Api.springboot.helper.CustomerStatus;
+import com.TMDT.api.Api.springboot.helper.MD5;
+import com.TMDT.api.Api.springboot.models.Address;
 import com.TMDT.api.Api.springboot.models.Customer;
 import com.TMDT.api.Api.springboot.repositories.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,40 +41,79 @@ public class CustomerControllers {
                 );
     }
 
-//    @PostMapping("/login")
-//    ResponseEntity<ResponseObject> login(@RequestBody Customer loginRequest) {
-//        // Lấy thông tin từ request
-//        String username = loginRequest.getUsername();
-//        String password = loginRequest.getPassword();
-//
-//        // Kiểm tra xem username và password có hợp lệ không (ví dụ: kiểm tra trong database)
-//        if (isValidLogin(username, password)) {
-//            // Trả về thông tin user nếu đăng nhập thành công
-//            return ResponseEntity.status(HttpStatus.OK).body(
-//                    new ResponseObject("ok", "Login successful", getUserByUsername(username))
-//            );
-//        } else {
-//            // Trả về thông báo lỗi nếu đăng nhập thất bại
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-//                    new ResponseObject("failed", "Invalid username or password", "")
-//            );
-//        }
-//    }
+    @PostMapping("/login")
+    ResponseEntity<ResponseObject> login(@RequestBody Customer loginRequest) {
+        // Lấy thông tin từ request
+        String email = loginRequest.getEmail();
+        String password = MD5.getHashMD5(loginRequest.getPassword());
 
-//    // Phương thức để kiểm tra xem username và password có hợp lệ không
-//    private boolean isValidLogin(String username, String password) {
-//        // Ở đây bạn có thể thực hiện việc kiểm tra trong database,
-//        // hoặc bất kỳ cơ chế xác thực nào khác phù hợp với ứng dụng của bạn.
-//        // Đây chỉ là một ví dụ đơn giản, không phải là một cách thực hiện an toàn.
-//        return "admin".equals(username) && "password".equals(password);
-//    }
-//
-//    // Phương thức để lấy thông tin user từ database (ví dụ)
-//    private Customer getUserByUsername(String username) {
-//        // Ở đây bạn có thể truy vấn database để lấy thông tin user dựa trên username.
-//        // Đây chỉ là một ví dụ đơn giản, không phải là một cách thực hiện an toàn.
-//        // Trong thực tế, bạn nên sử dụng cơ chế bảo mật tốt hơn.
-//        // Giả sử có một lớp User tương ứng với bảng trong database.
-//        return customerRepository.findByUserName(username);
-//    }
+        Optional<Customer> foundUser = customerRepository.findByEmailAndPassword(email, password);
+        return foundUser.isPresent() ?
+                ResponseEntity.status(HttpStatus.OK).body(
+                        new ResponseObject("ok", "Success", foundUser))
+                : ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        new ResponseObject("failed", "Cannot find user by email = " + email + " and password = " + password, ""));
+    }
+
+    @PutMapping("/update")
+    ResponseEntity<ResponseObject> update(@RequestBody Customer updateRequest) {
+        // Lấy thông tin từ request
+        int id = updateRequest.getId();
+        String username = updateRequest.getUsername();
+        String email = updateRequest.getEmail();
+        String password = MD5.getHashMD5(updateRequest.getPassword());
+        String phone = updateRequest.getPhone();
+        List<Address> addresses = updateRequest.getAddresses();
+        int role = updateRequest.getRole();
+        int status = updateRequest.getStatus();
+
+        Customer customer = customerRepository.findById(id).map(user -> {
+            user.setId(id);
+            user.setUsername(username);
+            user.setEmail(email);
+            user.setPassword(password);
+            user.setPhone(phone);
+            user.setAddresses(addresses);
+            user.setRole(role);
+            user.setStatus(status);
+            return customerRepository.save(user);
+        }).orElseGet(() -> {
+            Customer newCustomer = new Customer();
+            newCustomer.setId(id);
+            newCustomer.setUsername(username);
+            newCustomer.setEmail(email);
+            newCustomer.setPassword(password);
+            newCustomer.setPhone(phone);
+            newCustomer.setAddresses(addresses);
+            newCustomer.setRole(role);
+            newCustomer.setStatus(status);
+            return customerRepository.save(newCustomer);
+        });
+        ResponseObject response = new ResponseObject("Success", "Customer updated successfully.", customer);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/register")
+    ResponseEntity<ResponseObject> register(@RequestBody Customer registerRequest) {
+        // Lấy thông tin từ request
+        String username = registerRequest.getUsername();
+        String email = registerRequest.getEmail();
+        String password = MD5.getHashMD5(registerRequest.getPassword());
+
+        Optional<Customer> foundUser = customerRepository.findByEmail(email);
+        if(foundUser.isPresent()) {
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    new ResponseObject("failed", "Email already exists", ""));
+        } else {
+            Customer customer = new Customer();
+            customer.setUsername(username);
+            customer.setEmail(email);
+            customer.setPassword(password);
+            customer.setRole(CustomerRole.USER);
+            customer.setStatus(CustomerStatus.ACTIVE);
+            customerRepository.save(customer);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new ResponseObject("ok", "Success", customer));
+        }
+    }
 }

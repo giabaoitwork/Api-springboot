@@ -1,9 +1,9 @@
 package com.TMDT.api.Api.springboot.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+
+import java.util.List;
 
 @Entity
 public class Customer {
@@ -14,14 +14,21 @@ public class Customer {
     private String password;
     private String email;
     private String phone;
-    private int role;
 
-    public Customer(String username, String email, String password, String phone, int role) {
+    @OneToMany
+    @JoinColumn(name = "customer_id")
+    private List<Address> addresses;
+
+    private int role;
+    private int status;
+
+    // constructor init account
+    public Customer(String username, String email, String password, int role, int status) {
         this.username = username;
         this.password = password;
         this.email = email;
-        this.phone = phone;
         this.role = role;
+        this.status = status;
     }
 
     public Customer() {}
@@ -72,4 +79,21 @@ public class Customer {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
+    public List<Address> getAddresses() {
+        return addresses;
+    }
+
+    public void setAddresses(List<Address> addresses) {
+        this.addresses = addresses;
+    }
+
 }
