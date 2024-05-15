@@ -1,128 +1,59 @@
 package com.TMDT.api.Api.springboot.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
-
+@Data
 @Entity
+@Getter
+@Setter
+@ToString
+@AllArgsConstructor
+@Table(name = "product")
 public class Product {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO) // auto generate id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // auto generate id
     private int id;
+    @Column
     private String name;
+    @Column
     private String description;
-    private String image;
-    @ElementCollection
-    private List<String> images;
+    @Column
     private double price;
+
+    @Column
     private double discount;
+    @Column
     private int quantity;
+    @Column
     private int sold;
+    @Column(name = "create_at")
+    private LocalDateTime createAt;
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "product")
+    private List<Image> images;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "category_id",
+            foreignKey = @ForeignKey(name = "fk_product_category"))
+    private Category category;
+    @Column
     private int status; // 0: ok, 1: hidden
 
-    public Product() {}
+    @ManyToMany(cascade = {CascadeType.ALL})
+    @JoinTable(
+            name = "product_phone_category",
+            joinColumns = {@JoinColumn(name = "product_id")},
+            inverseJoinColumns = {@JoinColumn(name = "phone_category_id")}
+    )
+    private List<PhoneCategory> phoneCategories;
 
-    public Product(String name, String description, String image, List<String> images, double price, double discount, int quantity, int sold, int status) {
-        this.name = name;
-        this.description = description;
-        this.image = image;
-        this.images = images;
-        this.price = price;
-        this.discount = discount;
-        this.quantity = quantity;
-        this.sold = sold;
-        this.status = status;
+    public Product() {
     }
 
-    public int getStatus() {
-        return status;
-    }
 
-    public void setStatus(int status) {
-        this.status = status;
-    }
-
-    public String getImage() {
-        return image;
-    }
-
-    public void setImage(String image) {
-        this.image = image;
-    }
-
-    public List<String> getImages() {
-        return images;
-    }
-
-    public void setImages(List<String> images) {
-        this.images = images;
-    }
-
-    public double getDiscount() {
-        return discount;
-    }
-
-    public void setDiscount(double discount) {
-        this.discount = discount;
-    }
-
-    public int getSold() {
-        return sold;
-    }
-
-    public void setSold(int sold) {
-        this.sold = sold;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
-    @Override
-    public String toString() {
-        return "Product{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", price=" + price +
-                ", quantity=" + quantity +
-                '}';
-    }
 }
