@@ -6,8 +6,12 @@ import lombok.*;
 import java.util.List;
 
 @Data
-@Entity@Getter@Setter@AllArgsConstructor@NoArgsConstructor
-@Table(name = "category")
+@Entity
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "categories")
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

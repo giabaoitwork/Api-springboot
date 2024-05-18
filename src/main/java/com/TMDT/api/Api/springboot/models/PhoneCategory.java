@@ -10,7 +10,7 @@ import java.util.Set;
 
 @Data
 @AllArgsConstructor@NoArgsConstructor@Getter@Setter@ToString
-@Entity@Table(name = "phone_category")
+@Entity@Table(name = "phone_categories")
 public class PhoneCategory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

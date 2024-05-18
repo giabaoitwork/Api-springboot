@@ -30,6 +30,10 @@
         <mapping class="com.TMDT.api.Api.springboot.models.Product" />
         <mapping class="com.TMDT.api.Api.springboot.models.Image" />
         <mapping class="com.TMDT.api.Api.springboot.models.Address" />
+        <mapping class="com.TMDT.api.Api.springboot.models.Order" />
+        <mapping class="com.TMDT.api.Api.springboot.models.CartDetail" />
+        <mapping class="com.TMDT.api.Api.springboot.models.OrderDetail" />
+        <mapping class="com.TMDT.api.Api.springboot.models.PhoneCategory" />
 <!--        <mapping class="com.TMDT.api.Api.springboot.models. " />-->
 
     </session-factory>

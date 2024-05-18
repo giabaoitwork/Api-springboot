@@ -5,7 +5,11 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Data
-@Entity@AllArgsConstructor@NoArgsConstructor@Getter@Setter
+@Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
 @Table(name = "address")
 public class Address {
     @Id

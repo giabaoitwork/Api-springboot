@@ -15,7 +15,8 @@ import java.util.Set;
 @Setter
 @ToString
 @AllArgsConstructor
-@Table(name = "product")
+@NoArgsConstructor
+@Table(name = "products")
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // auto generate id
@@ -53,9 +54,6 @@ public class Product {
     )
     @JsonManagedReference
     private List<PhoneCategory> phoneCategories;
-
-    public Product() {
-    }
-
+    
 
 }

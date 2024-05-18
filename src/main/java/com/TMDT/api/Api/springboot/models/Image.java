@@ -6,7 +6,7 @@ import lombok.*;
 
 @Data
 @Entity@AllArgsConstructor@NoArgsConstructor@Getter@Setter@ToString
-@Table(name = "image")
+@Table(name = "images")
 public class Image {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // auto generate id
