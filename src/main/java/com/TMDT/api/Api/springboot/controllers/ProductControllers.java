@@ -1,6 +1,9 @@
 package com.TMDT.api.Api.springboot.controllers;
 
+import com.TMDT.api.Api.springboot.models.Category;
+import com.TMDT.api.Api.springboot.models.PhoneCategory;
 import com.TMDT.api.Api.springboot.models.Product;
+import com.TMDT.api.Api.springboot.repositories.PhoneCategoryRepository;
 import com.TMDT.api.Api.springboot.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
@@ -17,17 +20,25 @@ public class ProductControllers {
 
     //Tạo ra biến productRepository, giống như singleton
     @Autowired
-    ProductRepository productRepository;
+    private ProductRepository productRepository;
 
 
     // get /api/v1/products/getAll
     @GetMapping("/getAll")
-    List<Product> getProducts() {
-        return productRepository.findAll(); // hàm này được cung cấp sẵn.
+    ResponseEntity<List<Product>> getProducts() {
+        List<Product> products = productRepository.findAll();
+//        for(Product p: products){
+//            p.setPhoneCategories(new PhoneCategoryControllers().getPhoneCategoryByProduct(p.getId()));
+//        }
+        return new ResponseEntity<>(productRepository.findAll(), HttpStatus.OK);
+    }
+    @GetMapping("/getByCategory")
+    ResponseEntity<List<Product>> getByCategory(@RequestParam int id) {
+        return new ResponseEntity<>(productRepository.findByCategory_Id(id), HttpStatus.OK);
     }
 
 
-    // /api/v1/products/1
+//     /api/v1/products/1
     @GetMapping("/{id}")
     ResponseEntity<ResponseObject> getProductById(@PathVariable int id) {
         Optional<Product> foundProduct = productRepository.findById(id);
@@ -54,6 +65,8 @@ public class ProductControllers {
 
     @PostMapping("/insert")
     ResponseEntity<ResponseObject> insertProduct(@RequestBody Product newProduct) {
+        System.out.println(new Product());
+        System.out.println(23);
         return ResponseEntity.status(HttpStatus.OK).body(
                 new ResponseObject("ok", "success", productRepository.save(newProduct))
         );
@@ -65,7 +78,7 @@ public class ProductControllers {
                 .map(product -> { // neu tim thay product thi chinh sua thong tin
                     product.setName(newProduct.getName());
                     product.setDescription(newProduct.getDescription());
-                    product.setImage(newProduct.getImage());
+                    product.setImages(newProduct.getImages());
                     product.setImages(newProduct.getImages());
                     product.setPrice(newProduct.getPrice());
                     product.setDiscount(newProduct.getDiscount());
