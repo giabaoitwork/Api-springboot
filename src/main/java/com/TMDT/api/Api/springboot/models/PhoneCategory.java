@@ -1,5 +1,6 @@
 package com.TMDT.api.Api.springboot.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -17,5 +18,6 @@ public class PhoneCategory {
     private String name;
     private int status;
     @ManyToMany(mappedBy = "phoneCategories")
+    @JsonBackReference
     private List<Product> products;
 }

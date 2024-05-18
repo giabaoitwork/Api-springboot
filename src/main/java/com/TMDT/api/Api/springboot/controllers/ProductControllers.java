@@ -27,9 +27,9 @@ public class ProductControllers {
     @GetMapping("/getAll")
     ResponseEntity<List<Product>> getProducts() {
         List<Product> products = productRepository.findAll();
-        for(Product p: products){
-            p.setPhoneCategories(new PhoneCategoryControllers().getPhoneCategoryByProduct(p.getId()));
-        }
+//        for(Product p: products){
+//            p.setPhoneCategories(new PhoneCategoryControllers().getPhoneCategoryByProduct(p.getId()));
+//        }
         return new ResponseEntity<>(productRepository.findAll(), HttpStatus.OK);
     }
     @GetMapping("/getByCategory")

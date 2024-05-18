@@ -1,6 +1,7 @@
 package com.TMDT.api.Api.springboot.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -50,6 +51,7 @@ public class Product {
             joinColumns = {@JoinColumn(name = "product_id")},
             inverseJoinColumns = {@JoinColumn(name = "phone_category_id")}
     )
+    @JsonManagedReference
     private List<PhoneCategory> phoneCategories;
 
     public Product() {

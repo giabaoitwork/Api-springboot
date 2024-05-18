@@ -8,5 +8,4 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PhoneCategoryRepository extends JpaRepository<PhoneCategory, Integer> {
-    Optional<List<PhoneCategory>> findById(int product_id);
 }
