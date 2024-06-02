@@ -1,5 +1,7 @@
 package com.TMDT.api.Api.springboot.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,10 +19,14 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // auto generate id
     private int id;
+
+    @JsonBackReference(value = "customer-order")
     @JoinColumn(name = "customer_id",
             foreignKey = @ForeignKey(name = "fk_order_customers"))
     @ManyToOne(fetch = FetchType.LAZY)
     private Customer customer;
+
+    @JsonManagedReference(value = "order-detail")
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "order")
     private List<OrderDetail> orderDetails;
     private String address;

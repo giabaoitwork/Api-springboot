@@ -1,10 +1,12 @@
 package com.TMDT.api.Api.springboot.models;
 
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -26,11 +28,19 @@ public class Customer {
     private int role;
     private int point;
     private int status;
+
+
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "customer")
+    @JsonManagedReference(value = "customer-address")
     private List<Address> addresses;
+
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "customer")
+    @JsonManagedReference(value = "customer-order")
     private List<Order> orders;
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "customer")
+
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "customer", cascade = CascadeType.ALL)
+    @JsonManagedReference(value = "customer-cart")
     private List<CartDetail> cartDetails;
 
 }

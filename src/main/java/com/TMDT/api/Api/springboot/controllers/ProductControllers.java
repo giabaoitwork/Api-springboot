@@ -1,16 +1,21 @@
 package com.TMDT.api.Api.springboot.controllers;
 
 import com.TMDT.api.Api.springboot.models.Category;
+import com.TMDT.api.Api.springboot.models.Image;
 import com.TMDT.api.Api.springboot.models.PhoneCategory;
 import com.TMDT.api.Api.springboot.models.Product;
+import com.TMDT.api.Api.springboot.repositories.CategoryRepository;
+import com.TMDT.api.Api.springboot.repositories.ImageRepository;
 import com.TMDT.api.Api.springboot.repositories.PhoneCategoryRepository;
 import com.TMDT.api.Api.springboot.repositories.ProductRepository;
+import com.TMDT.api.Api.springboot.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,81 +23,66 @@ import java.util.Optional;
 @RequestMapping(path = "/api/v1/products")
 public class ProductControllers {
 
-    //Tạo ra biến productRepository, giống như singleton
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private CategoryRepository categoryRepository;
 
-    // get /api/v1/products/getAll
+    @Autowired
+    ProductService productService;
+
     @GetMapping("/getAll")
-    ResponseEntity<List<Product>> getProducts() {
-        List<Product> products = productRepository.findAll();
-//        for(Product p: products){
-//            p.setPhoneCategories(new PhoneCategoryControllers().getPhoneCategoryByProduct(p.getId()));
-//        }
-        return new ResponseEntity<>(productRepository.findAll(), HttpStatus.OK);
+    ResponseEntity<ResponseObject> getProducts() {
+        List<Product> products = productService.getAll();
+        return ResponseEntity.ok(new ResponseObject("ok", "Success", products));
     }
+
     @GetMapping("/getByCategory")
-    ResponseEntity<List<Product>> getByCategory(@RequestParam int id) {
-        return new ResponseEntity<>(productRepository.findByCategory_Id(id), HttpStatus.OK);
+    ResponseEntity<ResponseObject> getByCategory(@RequestParam String category) {
+        List<Product> products = productService.getByCategory(category);
+        return ResponseEntity.ok(new ResponseObject("ok", "Success", products));
     }
 
-
-//     /api/v1/products/1
     @GetMapping("/{id}")
     ResponseEntity<ResponseObject> getProductById(@PathVariable int id) {
-        Optional<Product> foundProduct = productRepository.findById(id);
-        return foundProduct.isPresent() ?
+        Product foundProduct = productService.getById(id);
+        return foundProduct != null ?
                 ResponseEntity.status(HttpStatus.OK).body(
                         new ResponseObject("ok", "Success", foundProduct)
                 ) :
-                ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                ResponseEntity.status(HttpStatus.OK).body(
                         new ResponseObject("failed", "Cannot find product by id = " + id, "")
-                );
-    }
-
-    @GetMapping(path = "/getByNameAndId")
-    ResponseEntity<ResponseObject> getProducts(@Param("name") String name, @Param("id") int id) {
-        Optional<Product> foundProduct = productRepository.findByNameAndId(name, id);
-        return foundProduct.isPresent() ?
-                ResponseEntity.status(HttpStatus.OK).body(
-                        new ResponseObject("ok", "Success", foundProduct)
-                ) :
-                ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                        new ResponseObject("failed", "Cannot find product by name = " + name + " and id = " + id, "")
                 );
     }
 
     @PostMapping("/insert")
     ResponseEntity<ResponseObject> insertProduct(@RequestBody Product newProduct) {
-        System.out.println(new Product());
-        System.out.println(23);
-        return ResponseEntity.status(HttpStatus.OK).body(
-                new ResponseObject("ok", "success", productRepository.save(newProduct))
+        Product productSaved = productService.insert(newProduct);
+        return ResponseEntity.ok(
+                new ResponseObject("ok", "success", productSaved)
         );
     }
 
     @PutMapping("/{id}")
     ResponseEntity<ResponseObject> updateProduct(@PathVariable int id, @RequestBody Product newProduct) {
-        Product productUpdate = productRepository.findById(id)
-                .map(product -> { // neu tim thay product thi chinh sua thong tin
-                    product.setName(newProduct.getName());
-                    product.setDescription(newProduct.getDescription());
-                    product.setImages(newProduct.getImages());
-                    product.setImages(newProduct.getImages());
-                    product.setPrice(newProduct.getPrice());
-                    product.setDiscount(newProduct.getDiscount());
-                    product.setSold(newProduct.getSold());
-                    product.setQuantity(newProduct.getQuantity());
-                    product.setStatus(newProduct.getStatus());
-                    return productRepository.save(product);
-                }).orElseGet(() -> {  // neu khong tim thay thi them product moi
-                    newProduct.setId(id);
-                    return productRepository.save(newProduct);
-                });
+        Product productUpdate = productService.update(id, newProduct);
         return ResponseEntity.status(HttpStatus.OK).body(
                 new ResponseObject("ok", "success", productUpdate)
         );
+    }
+
+    @DeleteMapping("/{id}")
+    ResponseEntity<ResponseObject> deleteProduct(@PathVariable int id) {
+        Product product = productService.delete(id);
+        return ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject("ok", "success", product)
+        );
+    }
+
+    @GetMapping("/search")
+    ResponseEntity<ResponseObject> searchProduct(@RequestParam String name) {
+        return ResponseEntity.ok(new ResponseObject("ok", "Success", productService.search(name)));
     }
 
 }

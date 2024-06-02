@@ -1,6 +1,6 @@
 package com.TMDT.api.Api.springboot.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,6 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
+@ToString
 @Table(name = "address")
 public class Address {
     @Id
@@ -18,7 +19,7 @@ public class Address {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id",
             foreignKey = @ForeignKey(name = "fk_address_customer"))
-    @JsonIgnore
+    @JsonBackReference(value = "customer-address")
     private Customer customer;
     @Column(name = "province_id")
     private int provinceId;

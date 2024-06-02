@@ -1,5 +1,6 @@
 package com.TMDT.api.Api.springboot.models;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,4 +20,7 @@ public class Category {
     @Column
     private String name;
 
+
+    @OneToMany( mappedBy = "category")
+    private List<Product> products;
 }

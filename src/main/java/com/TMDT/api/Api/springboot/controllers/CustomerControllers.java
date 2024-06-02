@@ -1,13 +1,22 @@
 package com.TMDT.api.Api.springboot.controllers;
 
 import com.TMDT.api.Api.springboot.models.Customer;
+import com.TMDT.api.Api.springboot.models.VerificationCode;
 import com.TMDT.api.Api.springboot.repositories.CustomerRepository;
+import com.TMDT.api.Api.springboot.service.CustomerService;
+import com.TMDT.api.Api.springboot.service.EmailService;
+import com.TMDT.api.Api.springboot.service.VerificationCodeService;
+import jakarta.mail.MessagingException;
+import jakarta.websocket.server.PathParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -16,13 +25,18 @@ public class CustomerControllers {
 
     //Tạo ra biến userRepository, giống như singleton
     @Autowired
-    CustomerRepository customerRepository;
+    private CustomerRepository customerRepository;
+    @Autowired
+    private CustomerService customerService;
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private VerificationCodeService verificationCodeService;
 
     // get /api/v1/users/getAll
     @GetMapping("/getAll")
-    ResponseEntity<List<Customer>> getUsers() {
-        return new ResponseEntity<>(customerRepository.findAll(),
-                HttpStatus.OK); // hàm này được cung cấp sẵn.
+    public ResponseEntity<ResponseObject> getUsers() {
+        return ResponseEntity.ok(new ResponseObject("ok", "Success", customerService.getAllCustomer()));
     }
 
     // /api/v1/products/1
@@ -33,33 +47,98 @@ public class CustomerControllers {
                 ResponseEntity.status(HttpStatus.OK).body(
                         new ResponseObject("ok", "Success", foundUser)
                 ) :
-                ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                ResponseEntity.status(HttpStatus.OK).body(
                         new ResponseObject("failed", "Cannot find user by id = " + id, "")
                 );
     }
 
-    @PostMapping(value = "/login",consumes = {"application/json"}, produces = {"application/json"})
+    @PostMapping("/login")
     ResponseEntity<ResponseObject> login(@RequestBody Customer customer) {
-        System.out.println(customer);
-//        String email = loginRequest.getUsername();
-//        String password = loginRequest.getPassword();
+        Customer foundCustomer = customerService.login(customer);
+        return foundCustomer != null ?
+                ResponseEntity.status(HttpStatus.OK).body(
+                        new ResponseObject("ok", "Login successful", foundCustomer)
+                ) :
+                ResponseEntity.status(HttpStatus.OK).body(
+                        new ResponseObject("failed", "Invalid username or password", "")
+                );
+    }
 
-//        Optional<Customer> foundUser = customerRepository.findByEmail(email);
-
-//        return foundUser.isPresent() && foundUser.get().getPassword().equals(password) ?
-//                ResponseEntity.status(HttpStatus.OK).body(
-//                        new ResponseObject("ok", "Login successful", foundUser)
-//                ) :
-//                ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-//                        new ResponseObject("failed", "Invalid username or password", "")
-//                );
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                new ResponseObject("failed", "Invalid username or password", "")
+    @PostMapping("/register")
+    ResponseEntity<ResponseObject> register(@RequestBody Customer customer, @RequestParam String verificationCode) {
+        if (!verificationCodeService.isExist(customer.getEmail(), verificationCode)) {
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    new ResponseObject("failed", "Invalid verification code", "")
+            );
+        }
+        if (customerService.isExistEmail(customer.getEmail())) {
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    new ResponseObject("failed", "Email already exists", "")
+            );
+        }
+        Customer newCustomer = customerService.register(customer);
+        return ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject("ok", "Register successful", newCustomer)
         );
     }
-    @PostMapping(value ="/test")
-    String test(@RequestBody Customer customer){
-        Customer customer1 = new Customer();
-        return "ok";
+
+    @PutMapping("/update")
+    ResponseEntity<ResponseObject> update(@RequestBody Customer customer) {
+        return ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject("ok", "Update successful", customerService.update(customer)));
     }
+
+    @GetMapping("/sendVerificationEmail")
+    ResponseEntity<ResponseObject> sendVerificationEmail(@RequestBody String email, @RequestBody String name) {
+        try {
+            String code = customerService.generateVerificationCode();
+            VerificationCode verificationCode = new VerificationCode();
+            verificationCode.setEmail(email);
+            verificationCode.setCode(code);
+            verificationCode.setExpirationTime(LocalDateTime.now().plusMinutes(5));
+            verificationCodeService.save(verificationCode);
+
+            Map<String, Object> templateModel = new HashMap<>();
+
+            templateModel.put("name", name);
+            templateModel.put("verificationCode", code);
+
+            emailService.sendHtmlEmailVerificationCode(email, "Your Verification Code", templateModel);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    new ResponseObject("ok", "Send Verification Code successful", "")
+            );
+        } catch (MessagingException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    new ResponseObject("failed", "Send Verification Code fail", "")
+            );
+        }
+    }
+
+    @GetMapping("/sendNewPasswordEmail")
+    ResponseEntity<ResponseObject> sendForgotPasswordEmail(@RequestParam String email) {
+        try {
+            String newPassword = customerService.generatePassword();
+            Customer customer = customerService.getByEmail(email);
+            customer.setPassword(newPassword);
+            customerService.update(customer);
+
+            Map<String, Object> templateModel = new HashMap<>();
+
+            templateModel.put("name", customer.getUsername());
+            templateModel.put("newPassword", newPassword);
+
+            emailService.sendHtmlEmailNewPassword(email, "New Password!", templateModel);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    new ResponseObject("ok", "Send new password successful", "")
+            );
+        } catch (MessagingException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    new ResponseObject("failed", "Send new password fail", "")
+            );
+        }
+    }
+
+
 }
