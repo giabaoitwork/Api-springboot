@@ -89,7 +89,7 @@ public class CustomerControllers {
     }
 
     @GetMapping("/sendVerificationEmail")
-    ResponseEntity<ResponseObject> sendVerificationEmail(@RequestBody String email, @RequestBody String name) {
+    ResponseEntity<ResponseObject> sendVerificationEmail(@RequestParam String email, @RequestParam String name) {
         try {
             String code = customerService.generateVerificationCode();
             VerificationCode verificationCode = new VerificationCode();
