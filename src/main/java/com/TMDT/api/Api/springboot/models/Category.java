@@ -1,13 +1,18 @@
 package com.TMDT.api.Api.springboot.models;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
 
 @Data
-@Entity@Getter@Setter@AllArgsConstructor@NoArgsConstructor
-@Table(name = "category")
+@Entity
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "categories")
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,4 +20,7 @@ public class Category {
     @Column
     private String name;
 
+
+    @OneToMany( mappedBy = "category")
+    private List<Product> products;
 }

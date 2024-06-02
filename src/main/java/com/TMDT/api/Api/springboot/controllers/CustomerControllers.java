@@ -1,27 +1,42 @@
 package com.TMDT.api.Api.springboot.controllers;
 
 import com.TMDT.api.Api.springboot.models.Customer;
+import com.TMDT.api.Api.springboot.models.VerificationCode;
 import com.TMDT.api.Api.springboot.repositories.CustomerRepository;
+import com.TMDT.api.Api.springboot.service.CustomerService;
+import com.TMDT.api.Api.springboot.service.EmailService;
+import com.TMDT.api.Api.springboot.service.VerificationCodeService;
+import jakarta.mail.MessagingException;
+import jakarta.websocket.server.PathParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping(path = "/api/v1/users")
+@RequestMapping(path = "/api/v1/customers")
 public class CustomerControllers {
 
     //Tạo ra biến userRepository, giống như singleton
     @Autowired
-    CustomerRepository customerRepository;
+    private CustomerRepository customerRepository;
+    @Autowired
+    private CustomerService customerService;
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private VerificationCodeService verificationCodeService;
 
     // get /api/v1/users/getAll
     @GetMapping("/getAll")
-    List<Customer> getUsers() {
-        return customerRepository.findAll(); // hàm này được cung cấp sẵn.
+    public ResponseEntity<ResponseObject> getUsers() {
+        return ResponseEntity.ok(new ResponseObject("ok", "Success", customerService.getAllCustomer()));
     }
 
     // /api/v1/products/1
@@ -31,46 +46,99 @@ public class CustomerControllers {
         return foundUser.isPresent() ?
                 ResponseEntity.status(HttpStatus.OK).body(
                         new ResponseObject("ok", "Success", foundUser)
-                ):
-                ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                ) :
+                ResponseEntity.status(HttpStatus.OK).body(
                         new ResponseObject("failed", "Cannot find user by id = " + id, "")
                 );
     }
 
-//    @PostMapping("/login")
-//    ResponseEntity<ResponseObject> login(@RequestBody Customer loginRequest) {
-//        // Lấy thông tin từ request
-//        String username = loginRequest.getUsername();
-//        String password = loginRequest.getPassword();
-//
-//        // Kiểm tra xem username và password có hợp lệ không (ví dụ: kiểm tra trong database)
-//        if (isValidLogin(username, password)) {
-//            // Trả về thông tin user nếu đăng nhập thành công
-//            return ResponseEntity.status(HttpStatus.OK).body(
-//                    new ResponseObject("ok", "Login successful", getUserByUsername(username))
-//            );
-//        } else {
-//            // Trả về thông báo lỗi nếu đăng nhập thất bại
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-//                    new ResponseObject("failed", "Invalid username or password", "")
-//            );
-//        }
-//    }
+    @PostMapping("/login")
+    ResponseEntity<ResponseObject> login(@RequestBody Customer customer) {
+        Customer foundCustomer = customerService.login(customer);
+        return foundCustomer != null ?
+                ResponseEntity.status(HttpStatus.OK).body(
+                        new ResponseObject("ok", "Login successful", foundCustomer)
+                ) :
+                ResponseEntity.status(HttpStatus.OK).body(
+                        new ResponseObject("failed", "Invalid username or password", "")
+                );
+    }
 
-//    // Phương thức để kiểm tra xem username và password có hợp lệ không
-//    private boolean isValidLogin(String username, String password) {
-//        // Ở đây bạn có thể thực hiện việc kiểm tra trong database,
-//        // hoặc bất kỳ cơ chế xác thực nào khác phù hợp với ứng dụng của bạn.
-//        // Đây chỉ là một ví dụ đơn giản, không phải là một cách thực hiện an toàn.
-//        return "admin".equals(username) && "password".equals(password);
-//    }
-//
-//    // Phương thức để lấy thông tin user từ database (ví dụ)
-//    private Customer getUserByUsername(String username) {
-//        // Ở đây bạn có thể truy vấn database để lấy thông tin user dựa trên username.
-//        // Đây chỉ là một ví dụ đơn giản, không phải là một cách thực hiện an toàn.
-//        // Trong thực tế, bạn nên sử dụng cơ chế bảo mật tốt hơn.
-//        // Giả sử có một lớp User tương ứng với bảng trong database.
-//        return customerRepository.findByUserName(username);
-//    }
+    @PostMapping("/register")
+    ResponseEntity<ResponseObject> register(@RequestBody Customer customer, @RequestParam String verificationCode) {
+        if (!verificationCodeService.isExist(customer.getEmail(), verificationCode)) {
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    new ResponseObject("failed", "Invalid verification code", "")
+            );
+        }
+        if (customerService.isExistEmail(customer.getEmail())) {
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    new ResponseObject("failed", "Email already exists", "")
+            );
+        }
+        Customer newCustomer = customerService.register(customer);
+        return ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject("ok", "Register successful", newCustomer)
+        );
+    }
+
+    @PutMapping("/update")
+    ResponseEntity<ResponseObject> update(@RequestBody Customer customer) {
+        return ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject("ok", "Update successful", customerService.update(customer)));
+    }
+
+    @GetMapping("/sendVerificationEmail")
+    ResponseEntity<ResponseObject> sendVerificationEmail(@RequestBody String email, @RequestBody String name) {
+        try {
+            String code = customerService.generateVerificationCode();
+            VerificationCode verificationCode = new VerificationCode();
+            verificationCode.setEmail(email);
+            verificationCode.setCode(code);
+            verificationCode.setExpirationTime(LocalDateTime.now().plusMinutes(5));
+            verificationCodeService.save(verificationCode);
+
+            Map<String, Object> templateModel = new HashMap<>();
+
+            templateModel.put("name", name);
+            templateModel.put("verificationCode", code);
+
+            emailService.sendHtmlEmailVerificationCode(email, "Your Verification Code", templateModel);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    new ResponseObject("ok", "Send Verification Code successful", "")
+            );
+        } catch (MessagingException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    new ResponseObject("failed", "Send Verification Code fail", "")
+            );
+        }
+    }
+
+    @GetMapping("/sendNewPasswordEmail")
+    ResponseEntity<ResponseObject> sendForgotPasswordEmail(@RequestParam String email) {
+        try {
+            String newPassword = customerService.generatePassword();
+            Customer customer = customerService.getByEmail(email);
+            customer.setPassword(newPassword);
+            customerService.update(customer);
+
+            Map<String, Object> templateModel = new HashMap<>();
+
+            templateModel.put("name", customer.getUsername());
+            templateModel.put("newPassword", newPassword);
+
+            emailService.sendHtmlEmailNewPassword(email, "New Password!", templateModel);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    new ResponseObject("ok", "Send new password successful", "")
+            );
+        } catch (MessagingException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    new ResponseObject("failed", "Send new password fail", "")
+            );
+        }
+    }
+
+
 }

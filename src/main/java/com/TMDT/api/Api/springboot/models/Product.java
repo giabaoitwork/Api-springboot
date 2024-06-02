@@ -1,5 +1,6 @@
 package com.TMDT.api.Api.springboot.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -15,47 +16,36 @@ import java.util.Set;
 @Setter
 @ToString
 @AllArgsConstructor
-@Table(name = "product")
+@NoArgsConstructor
+@Table(name = "products")
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // auto generate id
     private int id;
-    @Column
     private String name;
-    @Column
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
-    @Column
     private double price;
-
-    @Column
     private double discount;
-    @Column
     private int quantity;
-    @Column
     private int sold;
     @Column(name = "create_at")
     private LocalDateTime createAt;
+
+    @JsonManagedReference(value = "product-image")
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "product")
     private List<Image> images;
-
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name = "category_id",
             foreignKey = @ForeignKey(name = "fk_product_category"))
     private Category category;
-    @Column
     private int status; // 0: ok, 1: hidden
 
-    @ManyToMany(cascade = {CascadeType.ALL})
+    @ManyToMany
     @JoinTable(
             name = "product_phone_category",
             joinColumns = {@JoinColumn(name = "product_id")},
             inverseJoinColumns = {@JoinColumn(name = "phone_category_id")}
     )
-    @JsonManagedReference
     private List<PhoneCategory> phoneCategories;
-
-    public Product() {
-    }
-
-
 }

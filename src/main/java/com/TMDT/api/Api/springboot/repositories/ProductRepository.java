@@ -8,9 +8,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<Product, Integer> {
+    List<Product> findAllByStatusNot(int id);
 
+    Product findFirstByIdAndStatusNot(int id, int status);
 
-    List<Product> findByCategory_Id(int id);
-    Optional<Product> findByNameAndId(String name, int id);
+    List<Product> findByNameContainingIgnoreCase(String name);
 
 }
