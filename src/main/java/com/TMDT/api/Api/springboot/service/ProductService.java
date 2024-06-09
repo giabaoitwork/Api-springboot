@@ -1,19 +1,14 @@
 package com.TMDT.api.Api.springboot.service;
 
 import com.TMDT.api.Api.springboot.models.Category;
-import com.TMDT.api.Api.springboot.models.PhoneCategory;
 import com.TMDT.api.Api.springboot.models.Product;
-import com.TMDT.api.Api.springboot.repositories.CategoryRepository;
-import com.TMDT.api.Api.springboot.repositories.ImageRepository;
-import com.TMDT.api.Api.springboot.repositories.PhoneCategoryRepository;
-import com.TMDT.api.Api.springboot.repositories.ProductRepository;
+import com.TMDT.api.Api.springboot.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ProductService {
@@ -29,11 +24,14 @@ public class ProductService {
     @Autowired
     private PhoneCategoryRepository phoneCategoryRepository;
 
+    @Autowired
+    ProductPhoneCategoryRepository productPhoneCategoryRepository;
+
     public Product getById(int id) {
         Product product = productRepository.findFirstByIdAndStatusNot(id, 0);
 
         if (product != null) {
-            clearProperties(product);
+            clearProperty(product);
             return product;
         }
         return null;
@@ -42,7 +40,7 @@ public class ProductService {
     public List<Product> getAll() {
         List<Product> products = productRepository.findAllByStatusNot(0);
         for (Product p : products) {
-            clearProperties(p);
+            clearProperty(p);
         }
         return products;
     }
@@ -50,34 +48,11 @@ public class ProductService {
     public List<Product> getByCategory(String category) {
         Category foundCategory = categoryRepository.findByName(category);
         List<Product> products = foundCategory.getProducts();
-        products.forEach(this::clearProperties);
+        products.forEach(this::clearProperty);
         return products;
     }
 
     public Product insert(Product newProduct) {
-        if (categoryRepository.findByName(newProduct.getCategory().getName()) != null) {
-            Category category = categoryRepository.findByName(newProduct.getCategory().getName());
-            newProduct.setCategory(category);
-        } else {
-            Category newCategory = new Category();
-            newCategory.setName(newProduct.getCategory().getName());
-            categoryRepository.save(newCategory);
-            newProduct.setCategory(newCategory);
-        }
-        List<PhoneCategory> phoneCategories = newProduct.getPhoneCategories();
-        for (int i = 0; i < phoneCategories.size(); i++) {
-            PhoneCategory foundPhoneCategory = phoneCategoryRepository.findByName(phoneCategories.get(i).getName());
-            if (foundPhoneCategory != null) {
-                newProduct.getPhoneCategories().set(i, foundPhoneCategory);
-            } else {
-                PhoneCategory newPhoneCategory = new PhoneCategory();
-                newPhoneCategory.setName(phoneCategories.get(i).getName());
-                newPhoneCategory.setStatus(phoneCategories.get(i).getStatus());
-                phoneCategoryRepository.save(newPhoneCategory);
-                newProduct.getPhoneCategories().set(i, newPhoneCategory);
-            }
-        }
-
         newProduct.setCreateAt(LocalDateTime.now());
         Product productSaved = productRepository.save(newProduct);
 
@@ -86,8 +61,13 @@ public class ProductService {
         });
         imageRepository.saveAll(newProduct.getImages());
 
+        newProduct.getProductPhoneCategories().forEach(productPhoneCategory -> {
+            productPhoneCategory.setProduct(productSaved);
+        });
+        productPhoneCategoryRepository.saveAll(newProduct.getProductPhoneCategories());
+
         Product result = productRepository.findById(productSaved.getId()).orElse(null);
-        clearProperties(result);
+        clearProperty(result);
         return result;
     }
 
@@ -99,10 +79,10 @@ public class ProductService {
         });
         imageRepository.saveAll(newProduct.getImages());
 
-        for (int i = 0; i < newProduct.getPhoneCategories().size(); i++) {
-            PhoneCategory foundPhoneCategory = phoneCategoryRepository.findByName(newProduct.getPhoneCategories().get(i).getName());
-            newProduct.getPhoneCategories().set(i, foundPhoneCategory);
-        }
+//        for (int i = 0; i < newProduct.getPhoneCategories().size(); i++) {
+//            PhoneCategory foundPhoneCategory = phoneCategoryRepository.findByName(newProduct.getPhoneCategories().get(i).getName());
+//            newProduct.getPhoneCategories().set(i, foundPhoneCategory);
+//        }
 
         newProduct.setCategory(categoryRepository.findByName(newProduct.getCategory().getName()));
         Product productUpdate = productRepository.findById(id)
@@ -115,17 +95,17 @@ public class ProductService {
                     product.setQuantity(newProduct.getQuantity());
                     product.setStatus(newProduct.getStatus());
                     product.setCategory(newProduct.getCategory());
-                    product.setPhoneCategories(newProduct.getPhoneCategories());
+//                    product.setPhoneCategories(newProduct.getPhoneCategories());
                     return productRepository.save(product);
                 }).get();
-        clearProperties(productUpdate);
+        clearProperty(productUpdate);
         return productUpdate;
     }
 
     public List<Product> search(String name) {
         List<Product> products = productRepository.findByNameContainingIgnoreCase(name);
         for (Product p : products) {
-            clearProperties(p);
+            clearProperty(p);
         }
         return products;
     }
@@ -137,18 +117,22 @@ public class ProductService {
             return productRepository.save(p);
         }).orElse(null);
         assert product != null;
-        clearProperties(product);
+        clearProperty(product);
         return product;
     }
 
-    private void clearProperties(Product product) {
-        product.getPhoneCategories().forEach(phoneCategory -> {
-            phoneCategory.setProducts(null);
+    public Product clearProperty(Product product) {
+        product.getProductPhoneCategories().forEach(productPhoneCategory -> {
+            productPhoneCategory.setProduct(null);
+            if (productPhoneCategory.getPhoneCategory() != null)
+                productPhoneCategory.getPhoneCategory().setProductPhoneCategories(null);
         });
         product.getImages().forEach(image -> {
             image.setProduct(null);
         });
-        product.getCategory().setProducts(null);
+        if (product.getCategory() != null)
+            product.getCategory().setProducts(null);
+        return product;
     }
 
 

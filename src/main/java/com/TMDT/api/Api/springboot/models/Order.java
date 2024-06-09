@@ -23,11 +23,11 @@ public class Order {
     @JsonBackReference(value = "customer-order")
     @JoinColumn(name = "customer_id",
             foreignKey = @ForeignKey(name = "fk_order_customers"))
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     private Customer customer;
 
-    @JsonManagedReference(value = "order-detail")
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "order")
+//    @JsonManagedReference(value = "order-detail")
+    @OneToMany(mappedBy = "order")
     private List<OrderDetail> orderDetails;
     private String address;
     private int discount;

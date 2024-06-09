@@ -16,20 +16,22 @@ public class CustomerService {
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+";
 
     public List<Customer> getAllCustomer() {
-        return customerRepository.findAll();
+        return clearProperties(customerRepository.findAll());
     }
 
-    public Customer getCustomerById(int id) {
-        return customerRepository.findById(id).orElse(null);
+    public Customer get(int id) {
+        return clearProperty(customerRepository.findById(id).orElse(null));
     }
+
     public Customer getByEmail(String email) {
         return customerRepository.findByEmail(email);
     }
+
     public Customer login(Customer customer) {
         String email = customer.getEmail();
         String password = customer.getPassword();
         Customer foundUser = customerRepository.findByEmail(email);
-        return foundUser != null && foundUser.getPassword().equals(password) ? foundUser : null;
+        return foundUser != null && foundUser.getPassword().equals(password) ? clearProperty(foundUser) : null;
     }
 
     public Customer register(Customer customer) {
@@ -58,6 +60,26 @@ public class CustomerService {
     }
 
     public Customer update(Customer customer) {
-        return customerRepository.save(customer);
+        return clearProperty(customerRepository.save(customer));
+    }
+
+    public Customer clearProperty(Customer customer) {
+        customer.setOrders(null);
+        customer.getCartDetails().forEach(cartDetail -> {
+            cartDetail.setCustomer(null);
+            cartDetail.setPhoneCategory(null);
+            cartDetail.getProduct().setCategory(null);
+            if (cartDetail.getProduct().getProductPhoneCategories() != null) {
+                cartDetail.getProduct().getProductPhoneCategories().clear();
+            }
+        });
+        return customer;
+    }
+
+    public List<Customer> clearProperties(List<Customer> customers) {
+        for (Customer customer : customers) {
+            clearProperty(customer);
+        }
+        return customers;
     }
 }

@@ -39,13 +39,8 @@ public class Product {
     @JoinColumn(name = "category_id",
             foreignKey = @ForeignKey(name = "fk_product_category"))
     private Category category;
-    private int status; // 0: ok, 1: hidden
+    private int status;
 
-    @ManyToMany
-    @JoinTable(
-            name = "product_phone_category",
-            joinColumns = {@JoinColumn(name = "product_id")},
-            inverseJoinColumns = {@JoinColumn(name = "phone_category_id")}
-    )
-    private List<PhoneCategory> phoneCategories;
+    @OneToMany(mappedBy = "product")
+    private List<ProductPhoneCategory> productPhoneCategories;
 }

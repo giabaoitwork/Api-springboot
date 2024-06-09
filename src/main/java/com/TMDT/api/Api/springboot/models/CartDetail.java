@@ -17,14 +17,14 @@ public class CartDetail {
     private int id;
     @JoinColumn(name = "product_id",
             foreignKey = @ForeignKey(name = "fk_cart_detail_product"))
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     private Product product;
-
+    @ManyToOne
+    private PhoneCategory phoneCategory;
 
     @JoinColumn(name = "customer_id",
             foreignKey = @ForeignKey(name = "fk_cart_detail_customer"))
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonBackReference(value = "customer-cart")
+    @ManyToOne
     private Customer customer;
     private int quantity;
     private int status;

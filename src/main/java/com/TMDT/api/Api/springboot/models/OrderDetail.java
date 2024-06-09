@@ -17,16 +17,19 @@ public class OrderDetail {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // auto generate id
     private int id;
 
-    @JsonBackReference(value = "order-detail")
-    @ManyToOne(fetch = FetchType.LAZY)
+//    @JsonBackReference(value = "order-detail")
+    @ManyToOne
     @JoinColumn(name = "order_id",
             foreignKey = @ForeignKey(name = "fk_order_detail_order"))
     private Order order;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "product_id",
             foreignKey = @ForeignKey(name = "fk_order_detail_product"))
     private Product product;
+
+    @ManyToOne
+    private PhoneCategory phoneCategory;
 
     private int quantity;
     private int price;
