@@ -11,7 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
-@ToString
+//@ToString
 @Table(name = "images")
 public class Image {
     @Id

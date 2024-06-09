@@ -58,6 +58,7 @@ public class ProductControllers {
 
     @PostMapping("/insert")
     ResponseEntity<ResponseObject> insertProduct(@RequestBody Product newProduct) {
+//        System.out.println(newProduct.getCategory());
         Product productSaved = productService.insert(newProduct);
         return ResponseEntity.ok(
                 new ResponseObject("ok", "success", productSaved)

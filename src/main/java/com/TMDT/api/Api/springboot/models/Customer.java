@@ -30,17 +30,16 @@ public class Customer {
     private int status;
 
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "customer")
+    @OneToMany(mappedBy = "customer")
     @JsonManagedReference(value = "customer-address")
     private List<Address> addresses;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "customer")
+    @OneToMany(mappedBy = "customer")
     @JsonManagedReference(value = "customer-order")
     private List<Order> orders;
 
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "customer", cascade = CascadeType.ALL)
-    @JsonManagedReference(value = "customer-cart")
+    @OneToMany(mappedBy = "customer")
     private List<CartDetail> cartDetails;
 
 }

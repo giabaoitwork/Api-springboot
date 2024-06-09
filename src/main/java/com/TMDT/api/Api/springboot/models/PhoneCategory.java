@@ -24,6 +24,8 @@ public class PhoneCategory {
     private int id;
     private String name;
     private int status;
-    @ManyToMany(mappedBy = "phoneCategories")
-    private List<Product> products;
+    @OneToMany(mappedBy = "phoneCategory")
+    private List<ProductPhoneCategory> productPhoneCategories;
+
+
 }
