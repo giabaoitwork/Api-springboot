@@ -38,10 +38,15 @@ public class ProductControllers {
         return ResponseEntity.ok(new ResponseObject("ok", "Success", products));
     }
 
-    @GetMapping("/getByCategory")
-    ResponseEntity<ResponseObject> getByCategory(@RequestParam String category) {
-        List<Product> products = productService.getByCategory(category);
-        return ResponseEntity.ok(new ResponseObject("ok", "Success", products));
+    @GetMapping("/getByFilter")
+    public ResponseEntity<ResponseObject> getProductsByFilter(
+            @RequestParam(required = false) String category,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(defaultValue = "asc") String order,
+            @RequestParam(defaultValue = "id") String orderBy) {
+        return ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject("ok", "Success", productService.getByFilter(category == null || "".equals(category) ? null : category, page - 1, limit, order, orderBy)));
     }
 
     @GetMapping("/{id}")
