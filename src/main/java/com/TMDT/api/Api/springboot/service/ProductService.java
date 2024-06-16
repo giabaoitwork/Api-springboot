@@ -1,9 +1,14 @@
 package com.TMDT.api.Api.springboot.service;
 
+import com.TMDT.api.Api.springboot.dto.ListProductDTO;
 import com.TMDT.api.Api.springboot.models.Category;
 import com.TMDT.api.Api.springboot.models.Product;
 import com.TMDT.api.Api.springboot.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,11 +50,15 @@ public class ProductService {
         return products;
     }
 
-    public List<Product> getByCategory(String category) {
-        Category foundCategory = categoryRepository.findByName(category);
-        List<Product> products = foundCategory.getProducts();
-        products.forEach(this::clearProperty);
-        return products;
+    public ListProductDTO getByFilter(String category, int page, int limit, String order, String orderBy) {
+        Sort sort = Sort.by(orderBy);
+        sort = order.equalsIgnoreCase("desc") ? sort.descending() : sort.ascending();
+        Pageable pageable = PageRequest.of(page, limit, sort);
+
+        // Gọi repository để lấy dữ liệu
+        Page<Product> productPage = productRepository.findByCategoryAndStatusNot(category, pageable);
+//        return clearProperties(productPage.getContent());
+        return new ListProductDTO(productPage.getTotalPages(), clearProperties(productPage.getContent()));
     }
 
     public Product insert(Product newProduct) {
@@ -135,5 +144,11 @@ public class ProductService {
         return product;
     }
 
+    public List<Product> clearProperties(List<Product> products) {
+        for (Product p : products) {
+            clearProperty(p);
+        }
+        return products;
+    }
 
 }
