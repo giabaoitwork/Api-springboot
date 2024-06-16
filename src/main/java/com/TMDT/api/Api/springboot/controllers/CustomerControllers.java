@@ -1,5 +1,7 @@
 package com.TMDT.api.Api.springboot.controllers;
 
+import com.TMDT.api.Api.springboot.dto.UpdateCustomerDTO;
+import com.TMDT.api.Api.springboot.dto.UpdateCustomerPasswordDTO;
 import com.TMDT.api.Api.springboot.models.Customer;
 import com.TMDT.api.Api.springboot.models.VerificationCode;
 import com.TMDT.api.Api.springboot.repositories.CustomerRepository;
@@ -83,9 +85,13 @@ public class CustomerControllers {
     }
 
     @PutMapping("/update")
-    ResponseEntity<ResponseObject> update(@RequestBody Customer customer) {
-        return ResponseEntity.status(HttpStatus.OK).body(
-                new ResponseObject("ok", "Update successful", customerService.update(customer)));
+    ResponseEntity<ResponseObject> update(@RequestBody UpdateCustomerDTO customerDTO) {
+        Customer customer = customerService.updateInfo(customerDTO);
+        return customer == null ? ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject("failed", "Update failed", ""))
+                :
+                ResponseEntity.status(HttpStatus.OK).body(
+                        new ResponseObject("ok", "Update successful", customer));
     }
 
     @GetMapping("/sendVerificationEmail")
@@ -138,6 +144,18 @@ public class CustomerControllers {
                     new ResponseObject("failed", "Send new password fail", "")
             );
         }
+    }
+
+    @PutMapping("/updatePassword")
+    ResponseEntity<ResponseObject> updatePassword(@RequestBody UpdateCustomerPasswordDTO customerDTO) {
+        Customer foundCustomer = customerService.updatePassword(customerDTO);
+        return foundCustomer != null ?
+                ResponseEntity.status(HttpStatus.OK).body(
+                        new ResponseObject("ok", "Update password successful", "")
+                ) :
+                ResponseEntity.status(HttpStatus.OK).body(
+                        new ResponseObject("failed", "Update password fail", "")
+                );
     }
 
 
