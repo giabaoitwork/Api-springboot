@@ -1,5 +1,7 @@
 package com.TMDT.api.Api.springboot.service;
 
+import com.TMDT.api.Api.springboot.dto.UpdateCustomerDTO;
+import com.TMDT.api.Api.springboot.dto.UpdateCustomerPasswordDTO;
 import com.TMDT.api.Api.springboot.models.Customer;
 import com.TMDT.api.Api.springboot.repositories.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +62,28 @@ public class CustomerService {
     }
 
     public Customer update(Customer customer) {
+        return clearProperty(customerRepository.save(customer));
+    }
+
+    public Customer updateInfo(UpdateCustomerDTO customerDTO) {
+        Customer customer = customerRepository.findById(customerDTO.getId()).orElse(null);
+        if (customer == null) {
+            return null;
+        }
+        customer.setUsername(customerDTO.getUserName());
+        customer.setPhone(customerDTO.getPhone());
+        return clearProperty(customerRepository.save(customer));
+    }
+
+    public Customer updatePassword(UpdateCustomerPasswordDTO customerDTO) {
+        Customer customer = customerRepository.findById(customerDTO.getId()).orElse(null);
+        if (customer == null) {
+            return null;
+        }
+        if (!customer.getPassword().equals(customerDTO.getPassword())) {
+            return null;
+        }
+        customer.setPassword(customerDTO.getNewPassword());
         return clearProperty(customerRepository.save(customer));
     }
 
