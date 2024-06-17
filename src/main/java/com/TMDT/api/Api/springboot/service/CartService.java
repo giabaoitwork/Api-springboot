@@ -53,9 +53,15 @@ public class CartService {
         if (cartDetail == null) {
             return null;
         }
-        cartDetail.setQuantity(quantity);
+        if (quantity > cartDetail.getProduct().getQuantity()) {
+            cartDetail.setQuantity(cartDetail.getProduct().getQuantity());
+        } else {
+            cartDetail.setQuantity(quantity);
+        }
+        System.out.println("quantity: "+cartDetail.getQuantity());
         return clearProperty(cartRepository.save(cartDetail));
     }
+
 
     public CartDetail clearProperty(CartDetail cartDetail) {
         cartDetail.setCustomer(null);

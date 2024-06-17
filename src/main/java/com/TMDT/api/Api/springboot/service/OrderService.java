@@ -79,7 +79,12 @@ public class OrderService {
     }
 
     public Order clearProperty(Order order) {
-        order.setCustomer(null);
+//        order.setCustomer(null);
+        order.getCustomer().setOrders(null);
+        order.getCustomer().setCartDetails(null);
+        order.getCustomer().setAddresses(null);
+        order.getCustomer().setOrders(null);
+        order.getCustomer().setPassword(null);
         order.getOrderDetails().forEach(orderDetail -> {
             orderDetail.setOrder(null);
             productService.clearProperty(orderDetail.getProduct());
@@ -87,6 +92,7 @@ public class OrderService {
                 orderDetail.getPhoneCategory().setProductPhoneCategories(null);
             }
         });
+        System.out.println(order);
         return order;
     }
 

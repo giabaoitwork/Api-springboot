@@ -33,8 +33,11 @@ public class CartControllers {
 
     @PutMapping("/update/{id}")
     public ResponseEntity<ResponseObject> update(@PathVariable int id, @RequestParam int quantity) {
+//        System.out.println(cartService.update(id, quantity));
         return ResponseEntity.ok(new ResponseObject("ok", "Success", cartService.update(id, quantity)));
     }
+
+
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<ResponseObject> delete(@PathVariable int id) {
