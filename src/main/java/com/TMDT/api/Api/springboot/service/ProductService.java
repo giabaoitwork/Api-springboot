@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -47,6 +48,9 @@ public class ProductService {
 
     public List<Product> getByCategory(String category) {
         Category foundCategory = categoryRepository.findByName(category);
+        if(foundCategory == null){
+            return new ArrayList<>();
+        }
         List<Product> products = foundCategory.getProducts();
         products.forEach(this::clearProperty);
         return products;
