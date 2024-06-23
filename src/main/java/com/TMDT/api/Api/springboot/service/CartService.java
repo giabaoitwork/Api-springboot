@@ -57,6 +57,7 @@ public class CartService {
         return cartRepository.save(cartDetail);
     }
 
+
     public CartDetail clearProperty(CartDetail cartDetail) {
         cartDetail.setCustomer(null);
         cartDetail.getProduct().setCategory(null);

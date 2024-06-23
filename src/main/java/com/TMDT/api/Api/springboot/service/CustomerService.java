@@ -93,14 +93,16 @@ public class CustomerService {
 
     public Customer clearProperty(Customer customer) {
         customer.setOrders(null);
-        customer.getCartDetails().forEach(cartDetail -> {
-            cartDetail.setCustomer(null);
-            cartDetail.setPhoneCategory(null);
-            cartDetail.getProduct().setCategory(null);
-            if (cartDetail.getProduct().getProductPhoneCategories() != null) {
-                cartDetail.getProduct().getProductPhoneCategories().clear();
-            }
-        });
+        if(customer.getOrders() != null) {
+            customer.getCartDetails().forEach(cartDetail -> {
+                cartDetail.setCustomer(null);
+                cartDetail.setPhoneCategory(null);
+                cartDetail.getProduct().setCategory(null);
+                if (cartDetail.getProduct().getProductPhoneCategories() != null) {
+                    cartDetail.getProduct().getProductPhoneCategories().clear();
+                }
+            });
+        }
         return customer;
     }
 

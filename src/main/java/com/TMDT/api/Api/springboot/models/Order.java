@@ -20,7 +20,7 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // auto generate id
     private int id;
 
-    @JsonBackReference(value = "customer-order")
+//    @JsonBackReference(value = "customer-order")
     @JoinColumn(name = "customer_id",
             foreignKey = @ForeignKey(name = "fk_order_customers"))
     @ManyToOne
@@ -36,6 +36,7 @@ public class Order {
     private LocalDateTime paymentDate;
     private String deliveryId;
     private LocalDateTime createDate;
+    private String note;
     private int status;
 
 
