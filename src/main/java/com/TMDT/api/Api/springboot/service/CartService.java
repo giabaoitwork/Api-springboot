@@ -53,13 +53,8 @@ public class CartService {
         if (cartDetail == null) {
             return null;
         }
-        if (quantity > cartDetail.getProduct().getQuantity()) {
-            cartDetail.setQuantity(cartDetail.getProduct().getQuantity());
-        } else {
-            cartDetail.setQuantity(quantity);
-        }
-        System.out.println("quantity: "+cartDetail.getQuantity());
-        return clearProperty(cartRepository.save(cartDetail));
+        cartDetail.setQuantity(quantity);
+        return cartRepository.save(cartDetail);
     }
 
 
@@ -69,7 +64,7 @@ public class CartService {
         if (cartDetail.getProduct().getProductPhoneCategories() != null) {
             cartDetail.getProduct().getProductPhoneCategories().clear();
         }
-        if (cartDetail.getPhoneCategory() != null) {
+        if (cartDetail.getPhoneCategory() != null && cartDetail.getPhoneCategory().getProductPhoneCategories() != null) {
             cartDetail.getPhoneCategory().getProductPhoneCategories().clear();
         }
         return cartDetail;
@@ -92,5 +87,15 @@ public class CartService {
             totalAmount += cartDetail.getProduct().getPrice() * cartDetail.getQuantity();
         }
         return totalAmount;
+    }
+
+    public CartDetail getCartByCustomerIdAndProductIdAndPhoneCategoryId(int customerId, int productId, int phoneCategoryId) {
+        CartDetail cartDetail;
+        if (phoneCategoryId == 0) {
+            cartDetail = cartRepository.findByCustomer_IdAndProduct_Id(customerId, productId);
+        } else {
+            cartDetail = cartRepository.findByCustomer_IdAndProduct_IdAndPhoneCategory_Id(customerId, productId, phoneCategoryId);
+        }
+        return cartDetail;
     }
 }

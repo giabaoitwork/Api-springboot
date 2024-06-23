@@ -27,14 +27,18 @@ public class CartControllers {
 
     @PostMapping("/insert")
     public ResponseEntity<ResponseObject> add(@RequestBody CartDetail cartDetail) {
-        return ResponseEntity.ok(new ResponseObject("ok", "Success", cartService.add(cartDetail)));
+        CartDetail cartDetail1 = cartService.getCartByCustomerIdAndProductIdAndPhoneCategoryId(cartDetail.getCustomer().getId(), cartDetail.getProduct().getId(), cartDetail.getPhoneCategory().getId());
+        if (cartDetail1 == null) {
+            return ResponseEntity.ok(new ResponseObject("ok", "Success", clearProperty(cartService.add(cartDetail))));
+        }
+        cartDetail1.setQuantity(cartDetail1.getQuantity() + cartDetail.getQuantity());
+        return ResponseEntity.ok(new ResponseObject("ok", "Success", clearProperty(cartService.update(cartDetail1.getId(), cartDetail1.getQuantity()))));
     }
 
 
     @PutMapping("/update/{id}")
     public ResponseEntity<ResponseObject> update(@PathVariable int id, @RequestParam int quantity) {
-//        System.out.println(cartService.update(id, quantity));
-        return ResponseEntity.ok(new ResponseObject("ok", "Success", cartService.update(id, quantity)));
+        return ResponseEntity.ok(new ResponseObject("ok", "Success", clearProperty(cartService.update(id, quantity))));
     }
 
 
@@ -54,6 +58,26 @@ public class CartControllers {
     @PostMapping("/getTotalPrice")
     public ResponseEntity<ResponseObject> getTotalPrice(@RequestBody List<CartDetail> cartDetails) {
         return ResponseEntity.ok(new ResponseObject("ok", "Success", cartService.calculateTotalAmount(cartDetails)));
+    }
+
+
+    public CartDetail clearProperty(CartDetail cartDetail) {
+        cartDetail.setCustomer(null);
+        cartDetail.getProduct().setCategory(null);
+        if (cartDetail.getProduct().getProductPhoneCategories() != null) {
+            cartDetail.getProduct().getProductPhoneCategories().clear();
+        }
+        if (cartDetail.getPhoneCategory() != null && cartDetail.getPhoneCategory().getProductPhoneCategories() != null) {
+            cartDetail.getPhoneCategory().getProductPhoneCategories().clear();
+        }
+        return cartDetail;
+    }
+
+    public List<CartDetail> clearProperties(List<CartDetail> cartDetails) {
+        for (CartDetail cartDetail : cartDetails) {
+            clearProperty(cartDetail);
+        }
+        return cartDetails;
     }
 
 }
