@@ -54,7 +54,7 @@ public class CartService {
             return null;
         }
         cartDetail.setQuantity(quantity);
-        return clearProperty(cartRepository.save(cartDetail));
+        return cartRepository.save(cartDetail);
     }
 
     public CartDetail clearProperty(CartDetail cartDetail) {
@@ -63,7 +63,7 @@ public class CartService {
         if (cartDetail.getProduct().getProductPhoneCategories() != null) {
             cartDetail.getProduct().getProductPhoneCategories().clear();
         }
-        if (cartDetail.getPhoneCategory() != null) {
+        if (cartDetail.getPhoneCategory() != null && cartDetail.getPhoneCategory().getProductPhoneCategories() != null) {
             cartDetail.getPhoneCategory().getProductPhoneCategories().clear();
         }
         return cartDetail;
@@ -86,5 +86,15 @@ public class CartService {
             totalAmount += cartDetail.getProduct().getPrice() * cartDetail.getQuantity();
         }
         return totalAmount;
+    }
+
+    public CartDetail getCartByCustomerIdAndProductIdAndPhoneCategoryId(int customerId, int productId, int phoneCategoryId) {
+        CartDetail cartDetail;
+        if (phoneCategoryId == 0) {
+            cartDetail = cartRepository.findByCustomer_IdAndProduct_Id(customerId, productId);
+        } else {
+            cartDetail = cartRepository.findByCustomer_IdAndProduct_IdAndPhoneCategory_Id(customerId, productId, phoneCategoryId);
+        }
+        return cartDetail;
     }
 }
