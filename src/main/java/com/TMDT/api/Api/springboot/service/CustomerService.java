@@ -65,6 +65,10 @@ public class CustomerService {
         return clearProperty(customerRepository.save(customer));
     }
 
+    public Customer update2(Customer customer) {
+        return customerRepository.save(customer);
+    }
+
     public Customer updateInfo(UpdateCustomerDTO customerDTO) {
         Customer customer = customerRepository.findById(customerDTO.getId()).orElse(null);
         if (customer == null) {

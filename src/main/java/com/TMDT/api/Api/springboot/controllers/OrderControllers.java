@@ -1,7 +1,5 @@
 package com.TMDT.api.Api.springboot.controllers;
 
-import com.TMDT.api.Api.springboot.dto.OrderDTO;
-import com.TMDT.api.Api.springboot.models.Order;
 import com.TMDT.api.Api.springboot.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +17,8 @@ public class OrderControllers {
         return ResponseEntity.ok(new ResponseObject("ok", "success", orderService.getAll()));
     }
 
-    @PostMapping("/insert")
-    public ResponseEntity<ResponseObject> createOrder(@RequestBody OrderDTO orderDTO) {
-        return ResponseEntity.ok(new ResponseObject("ok", "success", orderService.add(orderDTO.getCartDetailIds(), orderDTO.getOrder(), orderDTO.getAddressId(), orderDTO.getPoint())));
-    }
+//    @PostMapping("/insert")
+//    public ResponseEntity<ResponseObject> createOrder(@RequestBody OrderDTO orderDTO) {
+//        return ResponseEntity.ok(new ResponseObject("ok", "success", orderService.add(orderDTO.getCartDetailIds(), orderDTO.getOrder(), orderDTO.getAddressId(), orderDTO.getPoint())));
+//    }
 }

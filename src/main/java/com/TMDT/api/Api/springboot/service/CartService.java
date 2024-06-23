@@ -97,4 +97,8 @@ public class CartService {
         }
         return cartDetail;
     }
+
+    public List<CartDetail> getListCart(List<Integer> cartDetailIds) {
+        return cartRepository.findAllById(cartDetailIds);
+    }
 }
