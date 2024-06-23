@@ -41,6 +41,8 @@ public class CartControllers {
         return ResponseEntity.ok(new ResponseObject("ok", "Success", clearProperty(cartService.update(id, quantity))));
     }
 
+
+
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<ResponseObject> delete(@PathVariable int id) {
         cartService.delete(id);
