@@ -90,10 +90,12 @@
         <div class="total">
             <p><strong>Subtotal:</strong> <span
                     th:text="${#numbers.formatDecimal(total, 1, 'COMMA', 2, 'POINT')} + ' VND'"></span></p>
+            <p><strong>Shipping Fee:</strong> <span
+                    th:text="${#numbers.formatDecimal(shippingFee, 1, 'COMMA', 2, 'POINT')} + ' VND'"></span></p>
             <p><strong>Discount:</strong> <span
                     th:text="${#numbers.formatDecimal(discount, 1, 'COMMA', 2, 'POINT')} + ' VND'"></span></p>
             <p><strong>Total:</strong> <span
-                    th:text="${#numbers.formatDecimal(total - discount, 1, 'COMMA', 2, 'POINT')} + ' VND'"></span></p>
+                    th:text="${#numbers.formatDecimal(total - discount + shippingFee, 1, 'COMMA', 2, 'POINT')} + ' VND'"></span></p>
         </div>
     </div>
 </div>
