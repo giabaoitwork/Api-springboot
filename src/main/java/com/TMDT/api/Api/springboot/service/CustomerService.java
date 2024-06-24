@@ -60,10 +60,6 @@ public class CustomerService {
     }
 
     public Customer update(Customer customer) {
-        return clearProperty(customerRepository.save(customer));
-    }
-
-    public Customer update2(Customer customer) {
         return customerRepository.save(customer);
     }
 

@@ -5,10 +5,7 @@ import com.TMDT.api.Api.springboot.models.*;
 import com.TMDT.api.Api.springboot.repositories.CartRepository;
 import com.TMDT.api.Api.springboot.repositories.OrderDetailRepository;
 import com.TMDT.api.Api.springboot.repositories.OrderRepository;
-import com.TMDT.api.Api.springboot.service.AddressService;
-import com.TMDT.api.Api.springboot.service.CartService;
-import com.TMDT.api.Api.springboot.service.CustomerService;
-import com.TMDT.api.Api.springboot.service.EmailService;
+import com.TMDT.api.Api.springboot.service.*;
 import com.TMDT.api.Api.springboot.utils.PaymentConfig;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,13 +40,16 @@ public class PaymentControllers {
     private OrderRepository orderRepository;
 
     @Autowired
+    ProductService productService;
+
+    @Autowired
     private OrderDetailRepository orderDetailRepository;
 
     @Autowired
     private CartRepository cartRepository;
 
     @PostMapping("/create_payment")
-    public ResponseEntity<?> createPayment(@RequestBody List<CartDetail> cartDetails, @RequestParam int point) throws UnsupportedEncodingException {
+    public ResponseEntity<?> createPayment(@RequestBody List<CartDetail> cartDetails, @RequestParam int point, @RequestParam int transportFee) throws UnsupportedEncodingException {
         String vnp_TxnRef = PaymentConfig.getRandomNumber(8);
         String vnp_TmnCode = PaymentConfig.vnp_TmnCode;
 
@@ -57,7 +57,7 @@ public class PaymentControllers {
         vnp_Params.put("vnp_Version", PaymentConfig.vnp_Version);
         vnp_Params.put("vnp_Command", PaymentConfig.vnp_Command);
         vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
-        vnp_Params.put("vnp_Amount", String.valueOf((cartService.calculateTotalAmount(cartDetails) - point * 1000) * 100));
+        vnp_Params.put("vnp_Amount", String.valueOf((cartService.calculateTotalAmount(cartDetails) - point * 1000 + transportFee) * 100));
         vnp_Params.put("vnp_CurrCode", "VND");
         vnp_Params.put("vnp_BankCode", "NCB");
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
@@ -65,7 +65,7 @@ public class PaymentControllers {
         vnp_Params.put("vnp_OrderType", "1");
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_IpAddr", "172.16.2.173");
-        vnp_Params.put("vnp_ReturnUrl", PaymentConfig.vnp_ReturnUrl);
+        vnp_Params.put("vnp_ReturnUrl", PaymentConfig.vnp_ReturnUrl + "?point=" + point);
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -117,26 +117,27 @@ public class PaymentControllers {
         }
 
         List<CartDetail> cartDetails = cartService.getListCart(orderDTO.getCartDetailIds());
-//        Address address = addressService.getAddressById(orderDTO.getAddressId());
 
         int total = cartService.calculateTotalAmount(cartDetails);
         customer.setPoint((customer.getPoint() - orderDTO.getPoint()) + total / 1000);
-        customerService.update2(customer);
+        customerService.update(customer);
 
         Order order = new Order();
         order.setAddress(orderDTO.getAddress());
         order.setCustomer(customer);
         order.setCreateDate(LocalDateTime.now());
-        order.setDeliveryId(order.getDeliveryId());
+        order.setDeliveryId(orderDTO.getDeliveryId());
         order.setDiscount(orderDTO.getPoint() * 1000);
         order.setPaymentDate(LocalDateTime.now());
-        order.setPaymentStatus(1);
+        order.setPaymentStatus(orderDTO.getPaymentStatus());
+        order.setNote(orderDTO.getNote());
         order.setTotal(total);
         order.setStatus(1);
         orderRepository.save(order);
 
         List<OrderDetail> orderDetails = new ArrayList<>();
         for (CartDetail cartDetail : cartDetails) {
+            productService.updateSold(cartDetail.getProduct().getId(), cartDetail.getQuantity());
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setProduct(cartDetail.getProduct());
             orderDetail.setQuantity(cartDetail.getQuantity());
@@ -146,8 +147,10 @@ public class PaymentControllers {
             orderDetail.setPhoneCategory(cartDetail.getPhoneCategory());
             orderDetails.add(orderDetail);
         }
+
         orderDetailRepository.saveAll(orderDetails);
         cartRepository.deleteAllById(orderDTO.getCartDetailIds());
+        order.setOrderDetails(orderDetails);
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 

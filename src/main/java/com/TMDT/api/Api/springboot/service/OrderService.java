@@ -1,5 +1,6 @@
 package com.TMDT.api.Api.springboot.service;
 
+import com.TMDT.api.Api.springboot.dto.RevenueCategory;
 import com.TMDT.api.Api.springboot.models.*;
 import com.TMDT.api.Api.springboot.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,9 @@ public class OrderService {
     private CartRepository cartRepository;
     @Autowired
     private CustomerRepository customerRepository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     public List<Order> getAll() {
         return orderRepository.findAll();
@@ -101,5 +105,37 @@ public class OrderService {
             clearProperty(order);
         }
         return orders;
+    }
+
+    public List<Integer> getRevenueByYear(int year) {
+        List<Integer> revenue = new ArrayList<>();
+        for (int i = 1; i <= 12; i++) {
+            revenue.add(getTotalRevenueForMonthAndYear(year, i));
+        }
+        return revenue;
+    }
+
+
+    public Integer getTotalRevenueForMonthAndYear(int year, int month) {
+        return orderRepository.getTotalRevenueForMonthAndYear(year, month) == null ? 0 : orderRepository.getTotalRevenueForMonthAndYear(year, month);
+    }
+
+    public List<Integer> getAllYear() {
+        return orderRepository.getAllYear();
+    }
+
+    public RevenueCategory getRevenueByCategory(int year, int month) {
+        List<Category> categories = categoryRepository.findAll();
+        RevenueCategory revenueCategory = new RevenueCategory(new ArrayList<>(), new ArrayList<>());
+
+        for (Category category : categories) {
+            revenueCategory.getLabels().add(category.getName());
+            revenueCategory.getData().add(getRevenueByCategory(category.getId(), year, month));
+        }
+        return revenueCategory;
+    }
+
+    public Integer getRevenueByCategory(int categoryId, int year, int month) {
+        return orderRepository.getTotalRevenueForCategoryInMonthAndYear(categoryId, year, month) == null ? 0 : orderRepository.getTotalRevenueForCategoryInMonthAndYear(categoryId, year, month);
     }
 }

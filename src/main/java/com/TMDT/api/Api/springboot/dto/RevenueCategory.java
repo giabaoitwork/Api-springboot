@@ -7,16 +7,12 @@ import lombok.Setter;
 
 import java.util.List;
 
+
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
-public class ReqOrderDTO {
-    List<Integer> cartDetailIds;
-    int customerId;
-    String deliveryId;
-    int paymentStatus;
-    String address;
-    String note;
-    int point;
+@NoArgsConstructor
+public class RevenueCategory {
+    List<String> labels;
+    List<Integer> data;
 }
