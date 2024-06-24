@@ -65,7 +65,7 @@ public class PaymentControllers {
         vnp_Params.put("vnp_OrderType", "1");
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_IpAddr", "172.16.2.173");
-        vnp_Params.put("vnp_ReturnUrl", PaymentConfig.vnp_ReturnUrl + "?point=" + point + "shippingFee=" + transportFee);
+        vnp_Params.put("vnp_ReturnUrl", PaymentConfig.vnp_ReturnUrl + "?point=" + point + "&shippingFee=" + transportFee);
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
