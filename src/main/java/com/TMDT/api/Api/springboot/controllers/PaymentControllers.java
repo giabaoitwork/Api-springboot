@@ -117,14 +117,14 @@ public class PaymentControllers {
         }
 
         List<CartDetail> cartDetails = cartService.getListCart(orderDTO.getCartDetailIds());
-        Address address = addressService.getAddressById(orderDTO.getAddressId());
+//        Address address = addressService.getAddressById(orderDTO.getAddressId());
 
         int total = cartService.calculateTotalAmount(cartDetails);
         customer.setPoint((customer.getPoint() - orderDTO.getPoint()) + total / 1000);
         customerService.update(customer);
 
         Order order = new Order();
-        order.setAddress(address.getSubAddress() + ", " + address.getWardValue() + ", " + address.getDistrictValue() + ", " + address.getProvinceValue());
+        order.setAddress(orderDTO.getAddress());
         order.setCustomer(customer);
         order.setCreateDate(LocalDateTime.now());
         order.setDeliveryId(orderDTO.getDeliveryId());
