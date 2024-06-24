@@ -21,4 +21,19 @@ public class OrderControllers {
 //    public ResponseEntity<ResponseObject> createOrder(@RequestBody OrderDTO orderDTO) {
 //        return ResponseEntity.ok(new ResponseObject("ok", "success", orderService.add(orderDTO.getCartDetailIds(), orderDTO.getOrder(), orderDTO.getAddressId(), orderDTO.getPoint())));
 //    }
+
+    @GetMapping("/revenueByYear")
+    public ResponseEntity<ResponseObject> getRevenueByYear(@RequestParam int year) {
+        return ResponseEntity.ok(new ResponseObject("ok", "success", orderService.getRevenueByYear(year)));
+    }
+
+    @GetMapping("/getAllYear")
+    public ResponseEntity<ResponseObject> getAllYear() {
+        return ResponseEntity.ok(new ResponseObject("ok", "success", orderService.getAllYear()));
+    }
+
+    @GetMapping("/revenueByCategory")
+    public ResponseEntity<ResponseObject> getRevenueByCategory(@RequestParam int year, @RequestParam int month) {
+        return ResponseEntity.ok(new ResponseObject("ok", "success", orderService.getRevenueByCategory(year, month)));
+    }
 }
