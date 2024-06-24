@@ -25,6 +25,7 @@ public class CartDetail {
     @JoinColumn(name = "customer_id",
             foreignKey = @ForeignKey(name = "fk_cart_detail_customer"))
     @ManyToOne
+    @JsonBackReference
     private Customer customer;
     private int quantity;
     private int status;
