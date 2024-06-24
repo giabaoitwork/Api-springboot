@@ -15,6 +15,7 @@ import lombok.*;
 public class ProductPhoneCategory {
 
     @EmbeddedId
+    @JsonIgnore
     private ProductPhoneCategoryId id;
 
     @ManyToOne

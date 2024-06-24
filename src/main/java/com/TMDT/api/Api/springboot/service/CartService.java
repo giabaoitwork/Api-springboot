@@ -1,5 +1,6 @@
 package com.TMDT.api.Api.springboot.service;
 
+import com.TMDT.api.Api.springboot.dto.CartDetailDTO;
 import com.TMDT.api.Api.springboot.models.CartDetail;
 import com.TMDT.api.Api.springboot.repositories.CartRepository;
 import com.TMDT.api.Api.springboot.repositories.CustomerRepository;
@@ -30,10 +31,14 @@ public class CartService {
         return clearProperty(cartRepository.findById(id).orElse(null));
     }
 
-    public CartDetail add(CartDetail cartDetail) {
-        cartDetail.setProduct(productRepository.findById(cartDetail.getProduct().getId()).orElse(null));
-        cartDetail.setPhoneCategory(phoneCategoryRepository.findById(cartDetail.getPhoneCategory().getId()).orElse(null));
-        return clearProperty(cartRepository.save(cartDetail));
+    public CartDetail add(CartDetailDTO cartDetailDTO) {
+        CartDetail cartDetail = new CartDetail();
+        cartDetail.setProduct(productRepository.findById(cartDetailDTO.getProductId()).orElse(null));
+        cartDetail.setPhoneCategory(phoneCategoryRepository.findById(cartDetailDTO.getPhoneCategoryId()).orElse(null));
+        cartDetail.setQuantity(cartDetailDTO.getQuantity());
+        cartDetail.setCustomer(customerRepository.findById(cartDetailDTO.getCustomerId()).orElse(null));
+        cartDetail.setStatus(1);
+        return cartRepository.save(cartDetail);
     }
 
     public void delete(int id) {

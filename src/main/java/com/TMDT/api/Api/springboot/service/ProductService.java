@@ -105,7 +105,10 @@ public class ProductService {
             productPhoneCategory.setProduct(productSaved);
             productPhoneCategory.setPhoneCategory(phoneCategoryRepository.getById(id));
             ProductPhoneCategory productPhoneCategorySaved = productPhoneCategoryRepository.save(productPhoneCategory);
-            productPhoneCategories.add(productPhoneCategorySaved);
+            ProductPhoneCategory productPhoneCategorySaved1 = new ProductPhoneCategory();
+            productPhoneCategorySaved1.setProduct(productSaved);
+            productPhoneCategorySaved1.setPhoneCategory(productPhoneCategorySaved.getPhoneCategory());
+            productPhoneCategories.add(productPhoneCategorySaved1);
         });
         productSaved.setProductPhoneCategories(productPhoneCategories);
 

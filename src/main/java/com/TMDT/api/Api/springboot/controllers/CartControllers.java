@@ -1,5 +1,6 @@
 package com.TMDT.api.Api.springboot.controllers;
 
+import com.TMDT.api.Api.springboot.dto.CartDetailDTO;
 import com.TMDT.api.Api.springboot.models.CartDetail;
 import com.TMDT.api.Api.springboot.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,21 +27,20 @@ public class CartControllers {
     }
 
     @PostMapping("/insert")
-    public ResponseEntity<ResponseObject> add(@RequestBody CartDetail cartDetail) {
-        CartDetail cartDetail1 = cartService.getCartByCustomerIdAndProductIdAndPhoneCategoryId(cartDetail.getCustomer().getId(), cartDetail.getProduct().getId(), cartDetail.getPhoneCategory().getId());
+    public ResponseEntity<ResponseObject> add(@RequestBody CartDetailDTO cartDetail) {
+        CartDetail cartDetail1 = cartService.getCartByCustomerIdAndProductIdAndPhoneCategoryId(cartDetail.getCustomerId(), cartDetail.getProductId(), cartDetail.getPhoneCategoryId());
         if (cartDetail1 == null) {
-            return ResponseEntity.ok(new ResponseObject("ok", "Success", clearProperty(cartService.add(cartDetail))));
+            return ResponseEntity.ok(new ResponseObject("ok", "Success", cartService.add(cartDetail)));
         }
         cartDetail1.setQuantity(cartDetail1.getQuantity() + cartDetail.getQuantity());
-        return ResponseEntity.ok(new ResponseObject("ok", "Success", clearProperty(cartService.update(cartDetail1.getId(), cartDetail1.getQuantity()))));
+        return ResponseEntity.ok(new ResponseObject("ok", "Success", cartService.update(cartDetail1.getId(), cartDetail1.getQuantity())));
     }
 
 
     @PutMapping("/update/{id}")
     public ResponseEntity<ResponseObject> update(@PathVariable int id, @RequestParam int quantity) {
-        return ResponseEntity.ok(new ResponseObject("ok", "Success", clearProperty(cartService.update(id, quantity))));
+        return ResponseEntity.ok(new ResponseObject("ok", "Success", cartService.update(id, quantity)));
     }
-
 
 
     @DeleteMapping("/delete/{id}")
