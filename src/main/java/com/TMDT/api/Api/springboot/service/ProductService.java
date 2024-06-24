@@ -3,6 +3,7 @@ package com.TMDT.api.Api.springboot.service;
 import com.TMDT.api.Api.springboot.dto.ListProductDTO;
 import com.TMDT.api.Api.springboot.dto.ProductDTO;
 import com.TMDT.api.Api.springboot.dto.ProductInsertDTO;
+import com.TMDT.api.Api.springboot.dto.ProductUpdateDTO;
 import com.TMDT.api.Api.springboot.mapper.ProductMapper;
 import com.TMDT.api.Api.springboot.models.*;
 import com.TMDT.api.Api.springboot.repositories.*;
@@ -111,37 +112,47 @@ public class ProductService {
         return productSaved;
     }
 
-    public Product update(int id, Product newProduct) {
+    public Product update(int id, ProductUpdateDTO productDTO) {
         Product product = productRepository.findById(id).orElse(null);
         if (product == null) {
             return null;
         }
-        Category category = categoryRepository.findById(newProduct.getCategory().getId()).orElse(null);
+        Category category = categoryRepository.findById(productDTO.getCategoryId()).orElse(null);
         if (category == null) {
             return null;
         }
         product.setCategory(category);
-        product.setName(newProduct.getName());
-        product.setDescription(newProduct.getDescription());
-        product.setPrice(newProduct.getPrice());
-        product.setDiscount(newProduct.getDiscount());
-        product.setSold(newProduct.getSold());
-        product.setQuantity(newProduct.getQuantity());
-        product.setStatus(newProduct.getStatus());
-        product.setCategory(newProduct.getCategory());
+        product.setName(productDTO.getName());
+        product.setDescription(productDTO.getDescription());
+        product.setPrice(productDTO.getPrice());
+        product.setDiscount(productDTO.getDiscount());
+        product.setSold(productDTO.getSold());
+        product.setQuantity(productDTO.getQuantity());
+        product.setStatus(productDTO.getStatus());
+        product.setCategory(category);
 
-        imageRepository.deleteByProductId(product.getId());
-        newProduct.getImages().forEach(image -> {
-            image.setProduct(newProduct);
+        List<Image> images = new ArrayList<>();
+        productDTO.getImages().forEach(url -> {
+            Image image = new Image();
+            image.setProduct(product);
+            image.setUrl(url);
+            Image imageSaved = imageRepository.save(image);
+            images.add(imageSaved);
         });
-        product.setImages(imageRepository.saveAll(newProduct.getImages()));
+        product.setImages(images);
 
-        productPhoneCategoryRepository.deleteByProduct_Id(product.getId());
-        newProduct.getProductPhoneCategories().forEach(productPhoneCategory -> {
-            productPhoneCategory.setProduct(newProduct);
-            productPhoneCategory.setPhoneCategory(phoneCategoryRepository.getById(productPhoneCategory.getPhoneCategory().getId()));
+        List<ProductPhoneCategory> productPhoneCategories = new ArrayList<>();
+        productDTO.getPhoneCategoryIds().forEach(itemId -> {
+            ProductPhoneCategory productPhoneCategory = new ProductPhoneCategory();
+            ProductPhoneCategoryId productPhoneCategoryId = new ProductPhoneCategoryId();
+            productPhoneCategoryId.setProductId(product.getId());
+            productPhoneCategoryId.setPhoneCategoryId(itemId);
+            productPhoneCategory.setId(productPhoneCategoryId);
+            productPhoneCategory.setProduct(product);
+            productPhoneCategory.setPhoneCategory(phoneCategoryRepository.getById(itemId));
+            productPhoneCategoryRepository.save(productPhoneCategory);
         });
-        product.setProductPhoneCategories(productPhoneCategoryRepository.saveAll(newProduct.getProductPhoneCategories()));
+        product.setProductPhoneCategories(productPhoneCategories);
 
         return productRepository.save(product);
     }
