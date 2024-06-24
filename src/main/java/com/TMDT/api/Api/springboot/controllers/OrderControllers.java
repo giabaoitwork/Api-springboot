@@ -36,4 +36,19 @@ public class OrderControllers {
     public ResponseEntity<ResponseObject> getRevenueByCategory(@RequestParam int year, @RequestParam int month) {
         return ResponseEntity.ok(new ResponseObject("ok", "success", orderService.getRevenueByCategory(year, month)));
     }
+
+    @GetMapping("/getByCustomer")
+    public ResponseEntity<ResponseObject> getByCustomer(@RequestParam int customerId) {
+        return ResponseEntity.ok(new ResponseObject("ok", "success", orderService.getByCustomer(customerId)));
+    }
+
+    @GetMapping("/cancelOrder")
+    public ResponseEntity<ResponseObject> cancelOrder(@RequestParam int orderId) {
+        return ResponseEntity.ok(new ResponseObject("ok", "success", orderService.cancelOrder(orderId)));
+    }
+
+    @PostMapping("/updateStatus")
+    public ResponseEntity<ResponseObject> updateStatus(@RequestParam int orderId, @RequestParam int status) {
+        return ResponseEntity.ok(new ResponseObject("ok", "success", orderService.updateStatus(orderId, status)));
+    }
 }

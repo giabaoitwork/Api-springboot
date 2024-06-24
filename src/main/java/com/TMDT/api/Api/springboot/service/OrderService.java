@@ -138,4 +138,22 @@ public class OrderService {
     public Integer getRevenueByCategory(int categoryId, int year, int month) {
         return orderRepository.getTotalRevenueForCategoryInMonthAndYear(categoryId, year, month) == null ? 0 : orderRepository.getTotalRevenueForCategoryInMonthAndYear(categoryId, year, month);
     }
+
+    public List<Order> getByCustomer(int customerId) {
+        return orderRepository.findByCustomer_Id(customerId);
+    }
+
+    public Order cancelOrder(int orderId) {
+        Order order = orderRepository.findById(orderId).get();
+        order.setStatus(6);
+        orderRepository.save(order);
+        return order;
+    }
+
+    public Order updateStatus(int orderId, int status) {
+        Order order = orderRepository.findById(orderId).get();
+        order.setStatus(status);
+        orderRepository.save(order);
+        return order;
+    }
 }

@@ -39,6 +39,4 @@ public class Order {
     private String note;
     private int status;
     private int shippingFee;
-
-
 }
