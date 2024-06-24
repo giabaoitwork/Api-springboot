@@ -1,5 +1,6 @@
 package com.TMDT.api.Api.springboot.controllers;
 
+import com.TMDT.api.Api.springboot.dto.ForgotPasswordDTO;
 import com.TMDT.api.Api.springboot.dto.LoginReqDTO;
 import com.TMDT.api.Api.springboot.dto.UpdateCustomerDTO;
 import com.TMDT.api.Api.springboot.dto.UpdateCustomerPasswordDTO;
@@ -14,6 +15,7 @@ import jakarta.websocket.server.PathParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -35,6 +37,9 @@ public class CustomerControllers {
     private EmailService emailService;
     @Autowired
     private VerificationCodeService verificationCodeService;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     // get /api/v1/users/getAll
     @GetMapping("/getAll")
@@ -145,6 +150,29 @@ public class CustomerControllers {
                     new ResponseObject("failed", "Send new password fail", "")
             );
         }
+    }
+
+    @PostMapping("forgotPassword")
+    ResponseEntity<ResponseObject> forgotPassword(@RequestBody ForgotPasswordDTO forgotPasswordDTO) {
+        Customer customer = customerService.getByEmail(forgotPasswordDTO.getEmail());
+        if (customer == null) {
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    new ResponseObject("failed", "Email not found", "")
+            );
+        }
+
+        if (!verificationCodeService.isExist(customer.getEmail(), forgotPasswordDTO.getVerifyCode())) {
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    new ResponseObject("failed", "Invalid verification code", "")
+            );
+        } else {
+            customer.setPassword(passwordEncoder.encode(forgotPasswordDTO.getNewPassword()));
+            customerService.update(customer);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    new ResponseObject("ok", "Forgot password successful", "")
+            );
+        }
+
     }
 
     @PutMapping("/updatePassword")
