@@ -5,10 +5,7 @@ import com.TMDT.api.Api.springboot.models.*;
 import com.TMDT.api.Api.springboot.repositories.CartRepository;
 import com.TMDT.api.Api.springboot.repositories.OrderDetailRepository;
 import com.TMDT.api.Api.springboot.repositories.OrderRepository;
-import com.TMDT.api.Api.springboot.service.AddressService;
-import com.TMDT.api.Api.springboot.service.CartService;
-import com.TMDT.api.Api.springboot.service.CustomerService;
-import com.TMDT.api.Api.springboot.service.EmailService;
+import com.TMDT.api.Api.springboot.service.*;
 import com.TMDT.api.Api.springboot.utils.PaymentConfig;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +38,9 @@ public class PaymentControllers {
 
     @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired
+    ProductService productService;
 
     @Autowired
     private OrderDetailRepository orderDetailRepository;
@@ -121,22 +121,24 @@ public class PaymentControllers {
 
         int total = cartService.calculateTotalAmount(cartDetails);
         customer.setPoint((customer.getPoint() - orderDTO.getPoint()) + total / 1000);
-        customerService.update2(customer);
+        customerService.update(customer);
 
         Order order = new Order();
         order.setAddress(address.getSubAddress() + ", " + address.getWardValue() + ", " + address.getDistrictValue() + ", " + address.getProvinceValue());
         order.setCustomer(customer);
         order.setCreateDate(LocalDateTime.now());
-        order.setDeliveryId(order.getDeliveryId());
+        order.setDeliveryId(orderDTO.getDeliveryId());
         order.setDiscount(orderDTO.getPoint() * 1000);
         order.setPaymentDate(LocalDateTime.now());
-        order.setPaymentStatus(1);
+        order.setPaymentStatus(orderDTO.getPaymentStatus());
+        order.setNote(orderDTO.getNote());
         order.setTotal(total);
         order.setStatus(1);
         orderRepository.save(order);
 
         List<OrderDetail> orderDetails = new ArrayList<>();
         for (CartDetail cartDetail : cartDetails) {
+            productService.updateSold(cartDetail.getProduct().getId(), cartDetail.getQuantity());
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setProduct(cartDetail.getProduct());
             orderDetail.setQuantity(cartDetail.getQuantity());
@@ -146,8 +148,10 @@ public class PaymentControllers {
             orderDetail.setPhoneCategory(cartDetail.getPhoneCategory());
             orderDetails.add(orderDetail);
         }
+
         orderDetailRepository.saveAll(orderDetails);
         cartRepository.deleteAllById(orderDTO.getCartDetailIds());
+        order.setOrderDetails(orderDetails);
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 

@@ -17,5 +17,6 @@ public class ReqOrderDTO {
     String deliveryId;
     int paymentStatus;
     int addressId;
+    String note;
     int point;
 }

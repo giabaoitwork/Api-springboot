@@ -197,4 +197,14 @@ public class ProductService {
         return products;
     }
 
+    public void updateSold(int id, int quantity) {
+        Product product = productRepository.findById(id).orElse(null);
+        if (product == null) {
+            return;
+        }
+        product.setSold(product.getSold() + quantity);
+        product.setQuantity(product.getQuantity() - quantity);
+        productRepository.save(product);
+    }
+
 }

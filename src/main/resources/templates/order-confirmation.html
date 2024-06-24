@@ -7,34 +7,42 @@
         body {
             font-family: Arial, sans-serif;
         }
+
         .container {
             width: 80%;
             margin: auto;
             border: 1px solid #ddd;
             padding: 20px;
         }
+
         .header {
             text-align: center;
             background-color: #f4f4f4;
             padding: 10px 0;
         }
+
         .details {
             margin: 20px 0;
         }
+
         .details table {
             width: 100%;
             border-collapse: collapse;
         }
+
         .details table, .details th, .details td {
             border: 1px solid #ddd;
         }
+
         .details th, .details td {
             padding: 8px;
             text-align: left;
         }
+
         .details th {
             background-color: #f4f4f4;
         }
+
         .total {
             text-align: right;
             margin-top: 20px;
@@ -64,22 +72,28 @@
             <tr>
                 <th>Product Name</th>
                 <th>Category</th>
+                <th>Phone Category</th>
                 <th>Price</th>
                 <th>Quantity</th>
+                <th>Total Item</th>
             </tr>
             <tr th:each="detail : ${orderDetails}">
                 <td th:text="${detail.product.name}"></td>
                 <td th:text="${detail.product.category.name}"></td>
                 <td th:text="${detail.phoneCategory.name}"></td>
+                <td th:text="${#numbers.formatDecimal(detail.product.price, 1, 'COMMA', 2, 'POINT')} + ' VND'"></td>
                 <td th:text="${detail.quantity}"></td>
                 <td th:text="${#numbers.formatDecimal(detail.price, 1, 'COMMA', 2, 'POINT')} + ' VND'"></td>
             </tr>
         </table>
 
         <div class="total">
-            <p><strong>Subtotal:</strong> <span th:text="${#numbers.formatDecimal(total, 1, 'COMMA', 2, 'POINT')} + ' VND'"></span></p>
-            <p><strong>Discount:</strong> <span th:text="${#numbers.formatDecimal(discount, 1, 'COMMA', 2, 'POINT')} + ' VND'"></span></p>
-            <p><strong>Total:</strong> <span th:text="${#numbers.formatDecimal(total - discount, 1, 'COMMA', 2, 'POINT')} + ' VND'"></span></p>
+            <p><strong>Subtotal:</strong> <span
+                    th:text="${#numbers.formatDecimal(total, 1, 'COMMA', 2, 'POINT')} + ' VND'"></span></p>
+            <p><strong>Discount:</strong> <span
+                    th:text="${#numbers.formatDecimal(discount, 1, 'COMMA', 2, 'POINT')} + ' VND'"></span></p>
+            <p><strong>Total:</strong> <span
+                    th:text="${#numbers.formatDecimal(total - discount, 1, 'COMMA', 2, 'POINT')} + ' VND'"></span></p>
         </div>
     </div>
 </div>
