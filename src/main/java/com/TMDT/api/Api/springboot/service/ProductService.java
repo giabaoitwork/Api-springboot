@@ -1,8 +1,10 @@
 package com.TMDT.api.Api.springboot.service;
 
 import com.TMDT.api.Api.springboot.dto.ListProductDTO;
-import com.TMDT.api.Api.springboot.models.Category;
-import com.TMDT.api.Api.springboot.models.Product;
+import com.TMDT.api.Api.springboot.dto.ProductDTO;
+import com.TMDT.api.Api.springboot.dto.ProductInsertDTO;
+import com.TMDT.api.Api.springboot.mapper.ProductMapper;
+import com.TMDT.api.Api.springboot.models.*;
 import com.TMDT.api.Api.springboot.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -15,40 +17,34 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
     @Autowired
-    private ProductRepository productRepository;
+    ProductRepository productRepository;
 
     @Autowired
-    private CategoryRepository categoryRepository;
+    CategoryRepository categoryRepository;
 
     @Autowired
-    private ImageRepository imageRepository;
+    ImageRepository imageRepository;
 
     @Autowired
-    private PhoneCategoryRepository phoneCategoryRepository;
+    CategoryService categoryService;
 
     @Autowired
     ProductPhoneCategoryRepository productPhoneCategoryRepository;
 
-    public Product getById(int id) {
-        Product product = productRepository.findFirstByIdAndStatusNot(id, 0);
+    @Autowired
+    PhoneCategoryRepository phoneCategoryRepository;
 
-        if (product != null) {
-            clearProperty(product);
-            return product;
-        }
-        return null;
+    public Product getById(int id) {
+        return productRepository.findFirstByIdAndStatusNot(id, 0);
     }
 
     public List<Product> getAll() {
-        List<Product> products = productRepository.findAllByStatusNot(0);
-        for (Product p : products) {
-            clearProperty(p);
-        }
-        return products;
+        return productRepository.findAll();
     }
 
     public ListProductDTO getByFilter(String category, int page, int limit, String order, String orderBy) {
@@ -62,23 +58,58 @@ public class ProductService {
         return new ListProductDTO(productPage.getTotalPages(), clearProperties(productPage.getContent()));
     }
 
-    public Product insert(Product newProduct) {
+    public List<Product> getByCategory(String category) {
+        Category foundCategory = categoryRepository.findByName(category);
+        if (foundCategory == null) {
+            return new ArrayList<>();
+        }
+        List<Product> products = foundCategory.getProducts();
+        products.forEach(this::clearProperty);
+        return products;
+    }
+
+
+    public Product insert(ProductInsertDTO productDTO) {
+        Category category = categoryService.getById(productDTO.getCategoryId());
+
+        Product newProduct = new Product();
+        newProduct.setName(productDTO.getName());
+        newProduct.setDescription(productDTO.getDescription());
+        newProduct.setPrice(productDTO.getPrice());
+        newProduct.setDiscount(productDTO.getDiscount());
+        newProduct.setSold(productDTO.getSold());
+        newProduct.setQuantity(productDTO.getQuantity());
+        newProduct.setStatus(1);
+        newProduct.setCategory(category);
         newProduct.setCreateAt(LocalDateTime.now());
         Product productSaved = productRepository.save(newProduct);
 
-        newProduct.getImages().forEach(image -> {
+
+        List<Image> images = new ArrayList<>();
+        productDTO.getImages().forEach(url -> {
+            Image image = new Image();
             image.setProduct(productSaved);
+            image.setUrl(url);
+            Image imageSaved = imageRepository.save(image);
+            images.add(imageSaved);
         });
-        imageRepository.saveAll(newProduct.getImages());
+        productSaved.setImages(images);
 
-        newProduct.getProductPhoneCategories().forEach(productPhoneCategory -> {
+        List<ProductPhoneCategory> productPhoneCategories = new ArrayList<>();
+        productDTO.getPhoneCategoryIds().forEach(id -> {
+            ProductPhoneCategory productPhoneCategory = new ProductPhoneCategory();
+            ProductPhoneCategoryId productPhoneCategoryId = new ProductPhoneCategoryId();
+            productPhoneCategoryId.setProductId(productSaved.getId());
+            productPhoneCategoryId.setPhoneCategoryId(id);
+            productPhoneCategory.setId(productPhoneCategoryId);
             productPhoneCategory.setProduct(productSaved);
+            productPhoneCategory.setPhoneCategory(phoneCategoryRepository.getById(id));
+            ProductPhoneCategory productPhoneCategorySaved = productPhoneCategoryRepository.save(productPhoneCategory);
+            productPhoneCategories.add(productPhoneCategorySaved);
         });
-        productPhoneCategoryRepository.saveAll(newProduct.getProductPhoneCategories());
+        productSaved.setProductPhoneCategories(productPhoneCategories);
 
-        Product result = productRepository.findById(productSaved.getId()).orElse(null);
-        clearProperty(result);
-        return result;
+        return productRepository.findById(productSaved.getId()).orElse(null);
     }
 
     @Transactional

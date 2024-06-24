@@ -12,11 +12,15 @@ public class CategoryService {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    public List<Category> getAll(){
-        List<Category> result =  categoryRepository.findAll();
-        for(Category category:result){
+    public List<Category> getAll() {
+        List<Category> result = categoryRepository.findAll();
+        for (Category category : result) {
             category.setProducts(null);
         }
         return result;
+    }
+
+    public Category getById(int id) {
+        return categoryRepository.findById(id).orElse(null);
     }
 }

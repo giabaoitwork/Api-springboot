@@ -48,5 +48,18 @@ public class EmailService {
 
         javaMailSender.send(message);
     }
+    public void sendHtmlEmailPaymentSuccess(String to, String subject, Map<String, Object> templateModel) throws MessagingException {
+        Context context = new Context();
+        context.setVariables(templateModel);
 
+        String htmlContent = templateEngine.process("order-confirmation", context);
+
+        MimeMessage message = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        helper.setTo(to);
+        helper.setSubject("Order Confirmation");
+        helper.setText(htmlContent, true);
+
+        javaMailSender.send(message);
+    }
 }

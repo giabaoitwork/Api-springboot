@@ -20,14 +20,15 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // auto generate id
     private int id;
 
-//    @JsonBackReference(value = "customer-order")
+    @JsonManagedReference(value = "order-customer")
     @JoinColumn(name = "customer_id",
             foreignKey = @ForeignKey(name = "fk_order_customers"))
     @ManyToOne
     private Customer customer;
 
-//    @JsonManagedReference(value = "order-detail")
+    @JsonManagedReference(value = "order-detail")
     @OneToMany(mappedBy = "order")
+    @JsonBackReference
     private List<OrderDetail> orderDetails;
     private String address;
     private int discount;

@@ -1,8 +1,16 @@
 package com.TMDT.api.Api.springboot.controllers;
 
-import com.TMDT.api.Api.springboot.models.CartDetail;
+import com.TMDT.api.Api.springboot.dto.ReqOrderDTO;
+import com.TMDT.api.Api.springboot.models.*;
+import com.TMDT.api.Api.springboot.repositories.CartRepository;
+import com.TMDT.api.Api.springboot.repositories.OrderDetailRepository;
+import com.TMDT.api.Api.springboot.repositories.OrderRepository;
+import com.TMDT.api.Api.springboot.service.AddressService;
 import com.TMDT.api.Api.springboot.service.CartService;
+import com.TMDT.api.Api.springboot.service.CustomerService;
+import com.TMDT.api.Api.springboot.service.EmailService;
 import com.TMDT.api.Api.springboot.utils.PaymentConfig;
+import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,13 +20,33 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/payment")
 public class PaymentControllers {
     @Autowired
-    CartService cartService;
+    private CartService cartService;
+
+    @Autowired
+    private CustomerService customerService;
+
+    @Autowired
+    private AddressService addressService;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private OrderRepository orderRepository;
+
+    @Autowired
+    private OrderDetailRepository orderDetailRepository;
+
+    @Autowired
+    private CartRepository cartRepository;
 
     @PostMapping("/create_payment")
     public ResponseEntity<?> createPayment(@RequestBody List<CartDetail> cartDetails, @RequestParam int point) throws UnsupportedEncodingException {
@@ -38,7 +66,6 @@ public class PaymentControllers {
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_IpAddr", "172.16.2.173");
         vnp_Params.put("vnp_ReturnUrl", PaymentConfig.vnp_ReturnUrl);
-
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -80,6 +107,65 @@ public class PaymentControllers {
         vnp_Params.put("vnp_SecureHash", vnp_SecureHash);
         ResponseObject responseObject = new ResponseObject("ok", "Success", paymentUrl);
         return new ResponseEntity<>(responseObject, HttpStatus.OK);
+    }
+
+    @PostMapping("/payment_success")
+    public ResponseEntity<ResponseObject> paymentSuccess(@RequestBody ReqOrderDTO orderDTO) throws MessagingException {
+        Customer customer = customerService.get(orderDTO.getCustomerId());
+        if (customer == null) {
+            return ResponseEntity.status(HttpStatus.OK).body(new ResponseObject("failed", "Customer not found", ""));
+        }
+
+        List<CartDetail> cartDetails = cartService.getListCart(orderDTO.getCartDetailIds());
+        Address address = addressService.getAddressById(orderDTO.getAddressId());
+
+        int total = cartService.calculateTotalAmount(cartDetails);
+        customer.setPoint((customer.getPoint() - orderDTO.getPoint()) + total / 1000);
+        customerService.update2(customer);
+
+        Order order = new Order();
+        order.setAddress(address.getSubAddress() + ", " + address.getWardValue() + ", " + address.getDistrictValue() + ", " + address.getProvinceValue());
+        order.setCustomer(customer);
+        order.setCreateDate(LocalDateTime.now());
+        order.setDeliveryId(order.getDeliveryId());
+        order.setDiscount(orderDTO.getPoint() * 1000);
+        order.setPaymentDate(LocalDateTime.now());
+        order.setPaymentStatus(1);
+        order.setTotal(total);
+        order.setStatus(1);
+        orderRepository.save(order);
+
+        List<OrderDetail> orderDetails = new ArrayList<>();
+        for (CartDetail cartDetail : cartDetails) {
+            OrderDetail orderDetail = new OrderDetail();
+            orderDetail.setProduct(cartDetail.getProduct());
+            orderDetail.setQuantity(cartDetail.getQuantity());
+            orderDetail.setOrder(order);
+            orderDetail.setStatus(1);
+            orderDetail.setPrice((int) (cartDetail.getProduct().getPrice() * cartDetail.getQuantity()));
+            orderDetail.setPhoneCategory(cartDetail.getPhoneCategory());
+            orderDetails.add(orderDetail);
+        }
+        orderDetailRepository.saveAll(orderDetails);
+        cartRepository.deleteAllById(orderDTO.getCartDetailIds());
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+        Map<String, Object> templateModel = new HashMap<>();
+        templateModel.put("name", customer.getUsername());
+        templateModel.put("email", customer.getEmail());
+        templateModel.put("phone", customer.getPhone());
+        templateModel.put("orderId", order.getId());
+        templateModel.put("address", order.getAddress());
+        templateModel.put("total", order.getTotal());
+        templateModel.put("discount", order.getDiscount());
+        templateModel.put("paymentDate", order.getPaymentDate().format(formatter));
+        templateModel.put("status", order.getPaymentStatus() == 0 ? "Unpaid" : "Paid");
+        templateModel.put("deliveryId", order.getDeliveryId());
+        templateModel.put("orderDetails", orderDetails);
+
+        emailService.sendHtmlEmailPaymentSuccess(customer.getEmail(), "Booking Success", templateModel);
+        return ResponseEntity.ok(new ResponseObject("ok", "Success", order));
     }
 
 

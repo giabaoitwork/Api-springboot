@@ -1,21 +1,20 @@
 package com.TMDT.api.Api.springboot.dto;
 
-import com.TMDT.api.Api.springboot.models.CartDetail;
-import com.TMDT.api.Api.springboot.models.Order;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.TMDT.api.Api.springboot.models.Customer;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class OrderDTO {
-    List<CartDetail> cartDetailIds;
-    Order order;
-    int addressId;
-    int point;
+    private int id;
+    private Customer customer;
+    private List<OrderDetailDTO> orderDetails;
+    private String address;
+    private int discount;
+    private int total;
+    private int paymentStatus;
+    private LocalDateTime paymentDate;
+    private String deliveryId;
+    private LocalDateTime createDate;
+    private int status;
 }

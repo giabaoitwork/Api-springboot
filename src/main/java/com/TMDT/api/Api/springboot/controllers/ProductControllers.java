@@ -1,23 +1,18 @@
 package com.TMDT.api.Api.springboot.controllers;
 
-import com.TMDT.api.Api.springboot.models.Category;
-import com.TMDT.api.Api.springboot.models.Image;
-import com.TMDT.api.Api.springboot.models.PhoneCategory;
+import com.TMDT.api.Api.springboot.dto.ProductDTO;
+import com.TMDT.api.Api.springboot.dto.ProductInsertDTO;
 import com.TMDT.api.Api.springboot.models.Product;
 import com.TMDT.api.Api.springboot.repositories.CategoryRepository;
-import com.TMDT.api.Api.springboot.repositories.ImageRepository;
-import com.TMDT.api.Api.springboot.repositories.PhoneCategoryRepository;
+
 import com.TMDT.api.Api.springboot.repositories.ProductRepository;
 import com.TMDT.api.Api.springboot.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "/api/v1/products")
@@ -34,8 +29,7 @@ public class ProductControllers {
 
     @GetMapping("/getAll")
     ResponseEntity<ResponseObject> getProducts() {
-        List<Product> products = productService.getAll();
-        return ResponseEntity.ok(new ResponseObject("ok", "Success", products));
+        return ResponseEntity.ok(new ResponseObject("ok", "Success", productService.getAll()));
     }
 
     @GetMapping("/getByFilter")
@@ -47,6 +41,12 @@ public class ProductControllers {
             @RequestParam(defaultValue = "id") String orderBy) {
         return ResponseEntity.status(HttpStatus.OK).body(
                 new ResponseObject("ok", "Success", productService.getByFilter(category == null || "".equals(category) ? null : category, page - 1, limit, order, orderBy)));
+    }
+
+    @GetMapping("/getByCategory")
+    ResponseEntity<ResponseObject> getByCategory(@RequestParam String category) {
+        List<Product> products = productService.getByCategory(category);
+        return ResponseEntity.ok(new ResponseObject("ok", "Success", products));
     }
 
     @GetMapping("/{id}")
@@ -62,12 +62,15 @@ public class ProductControllers {
     }
 
     @PostMapping("/insert")
-    ResponseEntity<ResponseObject> insertProduct(@RequestBody Product newProduct) {
-//        System.out.println(newProduct.getCategory());
-        Product productSaved = productService.insert(newProduct);
-        return ResponseEntity.ok(
-                new ResponseObject("ok", "success", productSaved)
-        );
+    ResponseEntity<ResponseObject> insertProduct(@RequestBody ProductInsertDTO productDTO) {
+        Product productSaved = productService.insert(productDTO);
+        return (productSaved == null) ?
+                ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                        new ResponseObject("failed", "Cannot insert product", "")
+                ) :
+                ResponseEntity.ok(
+                        new ResponseObject("ok", "success", productSaved)
+                );
     }
 
     @PutMapping("/{id}")

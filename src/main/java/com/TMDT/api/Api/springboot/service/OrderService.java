@@ -35,7 +35,7 @@ public class OrderService {
     private CustomerRepository customerRepository;
 
     public List<Order> getAll() {
-        return clearProperties(orderRepository.findAll());
+        return orderRepository.findAll();
     }
 
     public Order add(List<CartDetail> cartDetailIds, Order order, int addressId, int point) {

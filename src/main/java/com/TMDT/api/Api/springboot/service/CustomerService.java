@@ -29,11 +29,9 @@ public class CustomerService {
         return customerRepository.findByEmail(email);
     }
 
-    public Customer login(Customer customer) {
-        String email = customer.getEmail();
-        String password = customer.getPassword();
+    public Customer login(String email, String password) {
         Customer foundUser = customerRepository.findByEmail(email);
-        return foundUser != null && foundUser.getPassword().equals(password) ? clearProperty(foundUser) : null;
+        return foundUser != null && foundUser.getPassword().equals(password) ? foundUser : null;
     }
 
     public Customer register(Customer customer) {
@@ -65,6 +63,10 @@ public class CustomerService {
         return clearProperty(customerRepository.save(customer));
     }
 
+    public Customer update2(Customer customer) {
+        return customerRepository.save(customer);
+    }
+
     public Customer updateInfo(UpdateCustomerDTO customerDTO) {
         Customer customer = customerRepository.findById(customerDTO.getId()).orElse(null);
         if (customer == null) {
@@ -89,7 +91,7 @@ public class CustomerService {
 
     public Customer clearProperty(Customer customer) {
         customer.setOrders(null);
-        if(customer.getOrders() != null) {
+        if (customer.getOrders() != null) {
             customer.getCartDetails().forEach(cartDetail -> {
                 cartDetail.setCustomer(null);
                 cartDetail.setPhoneCategory(null);
