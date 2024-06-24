@@ -49,7 +49,7 @@ public class PaymentControllers {
     private CartRepository cartRepository;
 
     @PostMapping("/create_payment")
-    public ResponseEntity<?> createPayment(@RequestBody List<CartDetail> cartDetails, @RequestParam int point) throws UnsupportedEncodingException {
+    public ResponseEntity<?> createPayment(@RequestBody List<CartDetail> cartDetails, @RequestParam int point, @RequestParam int transportFee) throws UnsupportedEncodingException {
         String vnp_TxnRef = PaymentConfig.getRandomNumber(8);
         String vnp_TmnCode = PaymentConfig.vnp_TmnCode;
 
@@ -57,7 +57,7 @@ public class PaymentControllers {
         vnp_Params.put("vnp_Version", PaymentConfig.vnp_Version);
         vnp_Params.put("vnp_Command", PaymentConfig.vnp_Command);
         vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
-        vnp_Params.put("vnp_Amount", String.valueOf((cartService.calculateTotalAmount(cartDetails) - point * 1000) * 100));
+        vnp_Params.put("vnp_Amount", String.valueOf((cartService.calculateTotalAmount(cartDetails) - point * 1000 + transportFee) * 100));
         vnp_Params.put("vnp_CurrCode", "VND");
         vnp_Params.put("vnp_BankCode", "NCB");
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
@@ -65,7 +65,7 @@ public class PaymentControllers {
         vnp_Params.put("vnp_OrderType", "1");
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_IpAddr", "172.16.2.173");
-        vnp_Params.put("vnp_ReturnUrl", PaymentConfig.vnp_ReturnUrl);
+        vnp_Params.put("vnp_ReturnUrl", PaymentConfig.vnp_ReturnUrl + "?point=" + point);
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -117,7 +117,6 @@ public class PaymentControllers {
         }
 
         List<CartDetail> cartDetails = cartService.getListCart(orderDTO.getCartDetailIds());
-//        Address address = addressService.getAddressById(orderDTO.getAddressId());
 
         int total = cartService.calculateTotalAmount(cartDetails);
         customer.setPoint((customer.getPoint() - orderDTO.getPoint()) + total / 1000);
