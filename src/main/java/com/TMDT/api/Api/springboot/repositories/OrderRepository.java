@@ -1,6 +1,7 @@
 package com.TMDT.api.Api.springboot.repositories;
 
 import com.TMDT.api.Api.springboot.models.Order;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,4 +26,6 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     Integer getTotalRevenueForCategoryInMonthAndYear(@Param("categoryId") int categoryId,
                                                      @Param("year") int year,
                                                      @Param("month") int month);
+
+    List<Order> findByCustomer_Id(int customerId);
 }

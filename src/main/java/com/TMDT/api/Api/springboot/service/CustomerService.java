@@ -94,11 +94,11 @@ public class CustomerService {
         if (customer == null) {
             return null;
         }
-        if (!customer.getPassword().equals(customerDTO.getPassword())) {
+        if (!passwordEncoder.matches(customerDTO.getPassword(), customer.getPassword())) {
             return null;
         }
-        customer.setPassword(customerDTO.getNewPassword());
-        return clearProperty(customerRepository.save(customer));
+        customer.setPassword(passwordEncoder.encode(customerDTO.getNewPassword()));
+        return customerRepository.save(customer);
     }
 
     public Customer clearProperty(Customer customer) {
