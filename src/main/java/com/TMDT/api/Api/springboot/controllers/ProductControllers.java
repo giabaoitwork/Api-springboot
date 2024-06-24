@@ -2,6 +2,7 @@ package com.TMDT.api.Api.springboot.controllers;
 
 import com.TMDT.api.Api.springboot.dto.ProductDTO;
 import com.TMDT.api.Api.springboot.dto.ProductInsertDTO;
+import com.TMDT.api.Api.springboot.dto.ProductUpdateDTO;
 import com.TMDT.api.Api.springboot.models.Product;
 import com.TMDT.api.Api.springboot.repositories.CategoryRepository;
 
@@ -74,8 +75,8 @@ public class ProductControllers {
     }
 
     @PutMapping("/{id}")
-    ResponseEntity<ResponseObject> updateProduct(@PathVariable int id, @RequestBody Product newProduct) {
-        Product productUpdate = productService.update(id, newProduct);
+    ResponseEntity<ResponseObject> updateProduct(@PathVariable int id, @RequestBody ProductUpdateDTO productDTO) {
+        Product productUpdate = productService.update(id, productDTO);
         return ResponseEntity.status(HttpStatus.OK).body(
                 new ResponseObject("ok", "success", productUpdate)
         );
