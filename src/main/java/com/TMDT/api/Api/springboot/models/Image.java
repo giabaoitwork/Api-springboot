@@ -21,7 +21,7 @@ public class Image {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id",
             foreignKey = @ForeignKey(name = "fk_image_product"))
-    @JsonBackReference
+    @JsonBackReference(value = "product-image")
     private Product product;
     private String url;
 }
