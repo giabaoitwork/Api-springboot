@@ -1,5 +1,6 @@
 package com.TMDT.api.Api.springboot.controllers;
 
+import com.TMDT.api.Api.springboot.dto.LoginReqDTO;
 import com.TMDT.api.Api.springboot.dto.UpdateCustomerDTO;
 import com.TMDT.api.Api.springboot.dto.UpdateCustomerPasswordDTO;
 import com.TMDT.api.Api.springboot.models.Customer;
@@ -55,8 +56,8 @@ public class CustomerControllers {
     }
 
     @PostMapping("/login")
-    ResponseEntity<ResponseObject> login(@RequestBody Customer customer) {
-        Customer foundCustomer = customerService.login(customer);
+    ResponseEntity<ResponseObject> login(@RequestBody LoginReqDTO loginReqDTO) {
+        Customer foundCustomer = customerService.login(loginReqDTO.getEmail(), loginReqDTO.getPassword());
         return foundCustomer != null ?
                 ResponseEntity.status(HttpStatus.OK).body(
                         new ResponseObject("ok", "Login successful", foundCustomer)

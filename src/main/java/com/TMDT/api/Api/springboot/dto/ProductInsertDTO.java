@@ -1,8 +1,5 @@
 package com.TMDT.api.Api.springboot.dto;
 
-import com.TMDT.api.Api.springboot.models.Category;
-import com.TMDT.api.Api.springboot.models.Image;
-import com.TMDT.api.Api.springboot.models.ProductPhoneCategory;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,7 +12,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductDTO {
+public class ProductInsertDTO {
     private int id;
     private String name;
     private String description;
@@ -24,10 +21,7 @@ public class ProductDTO {
     private int quantity;
     private int sold;
     private LocalDateTime createAt;
-    private List<Image> images;
-    private Category category;
-    private int status;
-    private List<ProductPhoneCategory> productPhoneCategories;
-
-
+    private List<String> images;
+    private int categoryId;
+    private List<Integer> phoneCategoryIds;
 }

@@ -35,7 +35,7 @@ public class Customer {
     private List<Address> addresses;
 
     @OneToMany(mappedBy = "customer")
-    @JsonManagedReference(value = "customer-order")
+    @JsonBackReference(value = "order-customer")
     private List<Order> orders;
 
 

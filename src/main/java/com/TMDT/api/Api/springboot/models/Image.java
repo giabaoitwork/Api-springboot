@@ -18,10 +18,10 @@ public class Image {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // auto generate id
     private int id;
 
-    @JsonBackReference(value = "product-image")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id",
             foreignKey = @ForeignKey(name = "fk_image_product"))
+    @JsonBackReference
     private Product product;
     private String url;
 }

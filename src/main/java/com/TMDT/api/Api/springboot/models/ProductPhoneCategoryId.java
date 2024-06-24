@@ -11,7 +11,6 @@ import java.io.Serializable;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class ProductPhoneCategoryId implements Serializable {
     private int productId;
     private int phoneCategoryId;
