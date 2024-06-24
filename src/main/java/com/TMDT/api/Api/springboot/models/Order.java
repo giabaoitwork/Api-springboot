@@ -38,6 +38,7 @@ public class Order {
     private LocalDateTime createDate;
     private String note;
     private int status;
+    private int shippingFee;
 
 
 }
