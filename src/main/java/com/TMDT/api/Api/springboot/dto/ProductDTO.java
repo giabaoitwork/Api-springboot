@@ -28,6 +28,4 @@ public class ProductDTO {
     private Category category;
     private int status;
     private List<ProductPhoneCategory> productPhoneCategories;
-
-
 }

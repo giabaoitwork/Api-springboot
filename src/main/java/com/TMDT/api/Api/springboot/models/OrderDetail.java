@@ -17,7 +17,7 @@ public class OrderDetail {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // auto generate id
     private int id;
 
-//    @JsonBackReference(value = "order-detail")
+    @JsonBackReference(value = "order-detail")
     @ManyToOne
     @JoinColumn(name = "order_id",
             foreignKey = @ForeignKey(name = "fk_order_detail_order"))

@@ -104,46 +104,46 @@ public class ProductService {
             productPhoneCategory.setId(productPhoneCategoryId);
             productPhoneCategory.setProduct(productSaved);
             productPhoneCategory.setPhoneCategory(phoneCategoryRepository.getById(id));
-            ProductPhoneCategory productPhoneCategorySaved = productPhoneCategoryRepository.save(productPhoneCategory);
-            ProductPhoneCategory productPhoneCategorySaved1 = new ProductPhoneCategory();
-            productPhoneCategorySaved1.setProduct(productSaved);
-            productPhoneCategorySaved1.setPhoneCategory(productPhoneCategorySaved.getPhoneCategory());
-            productPhoneCategories.add(productPhoneCategorySaved1);
+            productPhoneCategoryRepository.save(productPhoneCategory);
         });
         productSaved.setProductPhoneCategories(productPhoneCategories);
 
-        return productRepository.findById(productSaved.getId()).orElse(null);
+        return productSaved;
     }
 
-    @Transactional
     public Product update(int id, Product newProduct) {
-        imageRepository.deleteByProductId(id);
+        Product product = productRepository.findById(id).orElse(null);
+        if (product == null) {
+            return null;
+        }
+        Category category = categoryRepository.findById(newProduct.getCategory().getId()).orElse(null);
+        if (category == null) {
+            return null;
+        }
+        product.setCategory(category);
+        product.setName(newProduct.getName());
+        product.setDescription(newProduct.getDescription());
+        product.setPrice(newProduct.getPrice());
+        product.setDiscount(newProduct.getDiscount());
+        product.setSold(newProduct.getSold());
+        product.setQuantity(newProduct.getQuantity());
+        product.setStatus(newProduct.getStatus());
+        product.setCategory(newProduct.getCategory());
+
+        imageRepository.deleteByProductId(product.getId());
         newProduct.getImages().forEach(image -> {
             image.setProduct(newProduct);
         });
-        imageRepository.saveAll(newProduct.getImages());
+        product.setImages(imageRepository.saveAll(newProduct.getImages()));
 
-//        for (int i = 0; i < newProduct.getPhoneCategories().size(); i++) {
-//            PhoneCategory foundPhoneCategory = phoneCategoryRepository.findByName(newProduct.getPhoneCategories().get(i).getName());
-//            newProduct.getPhoneCategories().set(i, foundPhoneCategory);
-//        }
+        productPhoneCategoryRepository.deleteByProduct_Id(product.getId());
+        newProduct.getProductPhoneCategories().forEach(productPhoneCategory -> {
+            productPhoneCategory.setProduct(newProduct);
+            productPhoneCategory.setPhoneCategory(phoneCategoryRepository.getById(productPhoneCategory.getPhoneCategory().getId()));
+        });
+        product.setProductPhoneCategories(productPhoneCategoryRepository.saveAll(newProduct.getProductPhoneCategories()));
 
-        newProduct.setCategory(categoryRepository.findByName(newProduct.getCategory().getName()));
-        Product productUpdate = productRepository.findById(id)
-                .map(product -> {
-                    product.setName(newProduct.getName());
-                    product.setDescription(newProduct.getDescription());
-                    product.setPrice(newProduct.getPrice());
-                    product.setDiscount(newProduct.getDiscount());
-                    product.setSold(newProduct.getSold());
-                    product.setQuantity(newProduct.getQuantity());
-                    product.setStatus(newProduct.getStatus());
-                    product.setCategory(newProduct.getCategory());
-//                    product.setPhoneCategories(newProduct.getPhoneCategories());
-                    return productRepository.save(product);
-                }).get();
-        clearProperty(productUpdate);
-        return productUpdate;
+        return productRepository.save(product);
     }
 
     public List<Product> search(String name) {

@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface ProductPhoneCategoryRepository extends JpaRepository<ProductPhoneCategory, ProductPhoneCategoryId> {
-
+    ProductPhoneCategory deleteByProduct_Id(int id);
 }

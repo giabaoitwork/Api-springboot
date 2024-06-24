@@ -20,7 +20,6 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // auto generate id
     private int id;
 
-    @JsonManagedReference(value = "order-customer")
     @JoinColumn(name = "customer_id",
             foreignKey = @ForeignKey(name = "fk_order_customers"))
     @ManyToOne
