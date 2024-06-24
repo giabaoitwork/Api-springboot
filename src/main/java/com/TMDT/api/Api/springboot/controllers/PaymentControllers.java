@@ -163,6 +163,7 @@ public class PaymentControllers {
         templateModel.put("address", order.getAddress());
         templateModel.put("total", order.getTotal());
         templateModel.put("discount", order.getDiscount());
+        templateModel.put("shippingFee", order.getShippingFee());
         templateModel.put("paymentDate", order.getPaymentDate().format(formatter));
         templateModel.put("status", order.getPaymentStatus() == 0 ? "Unpaid" : "Paid");
         templateModel.put("deliveryId", order.getDeliveryId());
