@@ -96,11 +96,7 @@ public class CartService {
 
     public CartDetail getCartByCustomerIdAndProductIdAndPhoneCategoryId(int customerId, int productId, int phoneCategoryId) {
         CartDetail cartDetail;
-        if (phoneCategoryId == 0) {
-            cartDetail = cartRepository.findByCustomer_IdAndProduct_Id(customerId, productId);
-        } else {
-            cartDetail = cartRepository.findByCustomer_IdAndProduct_IdAndPhoneCategory_Id(customerId, productId, phoneCategoryId);
-        }
+        cartDetail = cartRepository.findByCustomer_IdAndProduct_IdAndPhoneCategory_Id(customerId, productId, phoneCategoryId);
         return cartDetail;
     }
 
